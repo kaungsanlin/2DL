@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>စာရင်းချုပ်</title>
+    <title>2D / 3D စာရင်းချုပ် Calculator</title>
     <style>
         * {
             box-sizing: border-box;
@@ -12,90 +12,167 @@
         body {
             background-color: #f4f6f9;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             justify-content: center;
         }
         .container {
             width: 100%;
-            max-width: 550px;
+            max-width: 500px;
             background: #ffffff;
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         h2 {
             text-align: center;
             color: #2c3e50;
+            margin-top: 5px;
             margin-bottom: 5px;
         }
         p.subtitle {
-            font-size: 13px;
+            font-size: 12px;
             color: #666;
             margin-bottom: 15px;
             text-align: center;
         }
+
+        /* Navigation Tabs */
+        .tab-buttons {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            background: #eee;
+            padding: 5px;
+            border-radius: 8px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            background: transparent;
+            color: #555;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background: #ffffff;
+            color: #2c3e50;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Panel Sections */
+        .panel {
+            display: none;
+        }
+        .panel.active {
+            display: block;
+        }
+
         textarea {
             width: 100%;
-            height: 160px;
+            height: 140px;
             padding: 12px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 15px;
             outline: none;
             resize: vertical;
-            transition: border-color 0.3s;
         }
-        textarea:focus {
-            border-color: #3498db;
-        }
+        textarea:focus { border-color: #3498db; }
+
         .btn-group {
             display: flex;
             gap: 10px;
             margin-top: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        button {
+        button.action-btn {
             flex: 1;
             padding: 12px;
             background-color: #2ecc71;
             color: white;
             border: none;
             border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button.action-btn:hover { background-color: #27ae60; }
+        .reset-btn { background-color: #e74c3c !important; }
+        .reset-btn:hover { background-color: #c0392b !important; }
+
+        /* Win Check Panel Style */
+        .win-panel-box {
+            background-color: #fffdf5;
+            border: 2px solid #f1c40f;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .win-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .win-input-wrapper input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #f1c40f;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            outline: none;
+        }
+        .win-check-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.3s;
         }
-        button:hover {
-            background-color: #27ae60;
+        .win-check-btn:hover { background-color: #d35400; }
+
+        .win-result {
+            margin-top: 15px;
+            padding: 12px;
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px dashed #f39c12;
+            display: none;
         }
-        .reset-btn {
-            background-color: #e74c3c;
-        }
-        .reset-btn:hover {
-            background-color: #c0392b;
-        }
+
+        /* Table Style */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
         }
         th, td {
-            padding: 12px;
+            padding: 10px;
             text-align: center;
             border-bottom: 1px solid #eee;
         }
         th {
             background-color: #34495e;
             color: white;
-            border-radius: 4px;
         }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .highlight-win {
+            background-color: #ffeaa7 !important;
+            font-weight: bold;
         }
+
         .total-summary {
-            margin-top: 20px;
+            margin-top: 15px;
             padding: 15px;
             background-color: #e8f4f8;
             border-radius: 8px;
@@ -103,23 +180,44 @@
             justify-content: space-between;
             font-weight: bold;
             color: #2c3e50;
-            font-size: 18px;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>2D / 3D စာရင်းချုပ် Calculator</h2>
-    <p class="subtitle">ဥပမာ- 321R100 (၆ ကွက်ခွဲမည်) ၊ 78-71-73 R500 (၂ လုံး အလှည့်) ၊ 321 100</p>
+    <h2>2D / 3D Calculator</h2>
+    <p class="subtitle">ဥပမာ- ပါဝါ 100 ၊ အပူး 500 ၊ 321R100 ၊ 321 100</p>
     
-    <textarea id="pasteArea" placeholder="ဒီနေရာမှာ Copy Paste လုပ်ပါ...&#10;321R100&#10;78-71-73 R500&#10;08-01-03 R500"></textarea>
-
-    <div class="btn-group">
-        <button onclick="processData()">စာရင်းတွက်မည်</button>
-        <button class="reset-btn" onclick="resetData()">ဖျက်မည်</button>
+    <!-- Panel ခွဲသည့် ခလုတ်များ -->
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('inputPanel', this)">📝 စာရင်းထည့်မည်</button>
+        <button class="tab-btn" onclick="switchTab('winPanel', this)">🎯 ပေါက်ဂဏန်းစစ်မည်</button>
     </div>
 
+    <!-- Panel 1: Copy/Paste စာရင်းထည့်သည့်နေရာ -->
+    <div id="inputPanel" class="panel active">
+        <textarea id="pasteArea" placeholder="ဒီနေရာမှာ Copy Paste လုပ်ပါ...&#10;321 500&#10;321 300&#10;321 200"></textarea>
+
+        <div class="btn-group">
+            <button class="action-btn" onclick="processData()">စာရင်းတွက်မည်</button>
+            <button class="action-btn reset-btn" onclick="resetData()">ဖျက်မည်</button>
+        </div>
+    </div>
+
+    <!-- Panel 2: ပေါက်ဂဏန်း သီးသန့်စစ်သည့် Panel -->
+    <div id="winPanel" class="panel">
+        <div class="win-panel-box">
+            <div class="win-input-wrapper">
+                <input type="text" id="winningNumber" placeholder="ပေါက်ဂဏန်း ရိုက်ထည့်ပါ (ဥပမာ- 321)">
+                <button class="win-check-btn" onclick="checkWinner()">ပေါက်ဂဏန်း စစ်မည်</button>
+            </div>
+            <div id="winResult" class="win-result"></div>
+        </div>
+    </div>
+
+    <!-- တူညီသော ဇယား (ဘယ် Panel မှာပဲဖြစ်ဖြစ် မြင်နေရမည်) -->
     <table>
         <thead>
             <tr>
@@ -142,21 +240,39 @@
 <script>
     let bets = {};
 
+    const specialSets = {
+        'အပူး': ['00', '11', '22', '33', '44', '55', '66', '77', '88', '99'],
+        'ပူး': ['00', '11', '22', '33', '44', '55', '66', '77', '88', '99'],
+        'ပါဝါ': ['05', '16', '27', '38', '49', '50', '61', '72', '83', '94'],
+        'နတ်ခတ်': ['18', '24', '35', '07', '96', '81', '42', '53', '70', '69'],
+        'နက္ခတ်': ['18', '24', '35', '07', '96', '81', '42', '53', '70', '69'],
+        'ညီကို': ['01', '12', '23', '34', '45', '56', '67', '78', '89', '90', '10', '21', '32', '43', '54', '65', '76', '87', '98', '09']
+    };
+
+    function switchTab(panelId, btn) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(panelId).classList.add('active');
+        btn.classList.add('active');
+    }
+
     function addBet(num, amount) {
         if (num.length === 1) num = '0' + num;
 
         if (bets[num]) {
             bets[num].amount += amount;
             bets[num].count += 1;
+            bets[num].details.push(amount);
         } else {
             bets[num] = {
                 amount: amount,
-                count: 1
+                count: 1,
+                details: [amount]
             };
         }
     }
 
-    // ဂဏန်း၏ ပတ်လည် အလှည့်အကွက်များ အားလုံးကို ထုတ်ပေးသည့် function (Permutations)
     function getPermutations(str) {
         if (str.length <= 1) return [str];
         let permutations = [];
@@ -167,7 +283,6 @@
                 permutations.push(char + sub);
             }
         }
-        // ထပ်နေသော ဂဏန်းများကို ဖယ်ထုတ်ရန် (ဥပမာ- 112 ဆိုရင် ၃ ကွက်ပဲ ထွက်မည်)
         return [...new Set(permutations)];
     }
 
@@ -181,36 +296,37 @@
             let trimmed = line.trim();
             if (!trimmed) return;
 
-            // ၁။ R ပါဝင်သော ပုံစံများ (ဥပမာ- 321R100, 78-71-73 R500)
+            let specialMatch = trimmed.match(/^(အ?ပူး|ပါဝါ|နတ်ခတ်|နက္ခတ်|ညီကို)\s*[:=\-\s]*\s*(\d+)$/i);
+
+            if (specialMatch) {
+                let keyword = specialMatch[1];
+                let amount = parseInt(specialMatch[2]);
+                if (specialSets[keyword]) {
+                    specialSets[keyword].forEach(num => addBet(num, amount));
+                }
+                return;
+            }
+
             let rMatch = trimmed.match(/^(.*?)\s*[Rr]\s*(\d+)$/);
 
             if (rMatch) {
                 let numsText = rMatch[1];
                 let amount = parseInt(rMatch[2]);
-
                 let numbers = numsText.match(/\d+/g);
                 if (numbers) {
                     numbers.forEach(num => {
-                        // ဂဏန်း၏ အလှည့်ပတ်လည် အကွက်များ အားလုံးကို ယူမည်
                         let permutedList = getPermutations(num);
-                        permutedList.forEach(pNum => {
-                            addBet(pNum, amount);
-                        });
+                        permutedList.forEach(pNum => addBet(pNum, amount));
                     });
                 }
             } else {
-                // ၂။ R မပါဘဲ =, -, : သို့မဟုတ် Space ဖြင့် ပမာဏခွဲထားသော ပုံစံများ (ဥပမာ- 321 100, 22-100)
                 let eqMatch = trimmed.match(/^(.*?)\s*[:=\-\s]\s*(\d+)$/);
-
                 if (eqMatch) {
                     let numsText = eqMatch[1].trim();
                     let amount = parseInt(eqMatch[2]);
-
                     let numbers = numsText.match(/\d+/g);
                     if (numbers) {
-                        numbers.forEach(num => {
-                            addBet(num, amount);
-                        });
+                        numbers.forEach(num => addBet(num, amount));
                     }
                 }
             }
@@ -218,9 +334,50 @@
 
         document.getElementById('pasteArea').value = '';
         renderTable();
+        document.getElementById('winResult').style.display = 'none';
     }
 
-    function renderTable() {
+    function checkWinner() {
+        let winNum = document.getElementById('winningNumber').value.trim();
+        let resultDiv = document.getElementById('winResult');
+
+        if (!winNum) {
+            alert('ကျေးဇူးပြု၍ ပေါက်ဂဏန်း ရိုက်ထည့်ပါ!');
+            return;
+        }
+
+        if (winNum.length === 1) winNum = '0' + winNum;
+
+        renderTable(winNum);
+
+        if (bets[winNum]) {
+            let data = bets[winNum];
+            let detailCount = {};
+            data.details.forEach(amt => {
+                detailCount[amt] = (detailCount[amt] || 0) + 1;
+            });
+
+            let detailTextArr = [];
+            for (let amt in detailCount) {
+                detailTextArr.push(`<b>${detailCount[amt]}</b> ဦးက <b>${parseInt(amt).toLocaleString()}</b> ကျပ်`);
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <h4 style="margin:0 0 5px 0; color:#d35400;">🎉 ပေါက်ဂဏန်း [ ${winNum} ] တွေ့ရှိပါသည်!</h4>
+                <div>• စုစုပေါင်း ပေါက်ကြေး: <b>${data.amount.toLocaleString()} ကျပ်</b></div>
+                <div>• စုစုပေါင်း ပေါက်သူ: <b>${data.count} ဦး</b></div>
+                <div style="margin-top: 5px; color: #555; font-size: 13px;">
+                    📌 <u>အသေးစိတ်:</u> ${detailTextArr.join(' ၊ ')}
+                </div>
+            `;
+        } else {
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<h4 style="margin:0; color: #e74c3c;">❌ ဂဏန်း [ ${winNum} ] ကို မည်သူမျှ ထိုးထားခြင်း မရှိပါ!</h4>`;
+        }
+    }
+
+    function renderTable(highlightNum = '') {
         const tableBody = document.getElementById('listTable');
         const grandTotalSpan = document.getElementById('grandTotal');
         tableBody.innerHTML = '';
@@ -229,9 +386,11 @@
 
         for (let num in bets) {
             totalSum += bets[num].amount;
+            let isWin = (num === highlightNum);
+            let rowClass = isWin ? 'class="highlight-win"' : '';
 
-            let row = `<tr>
-                <td><strong>${num}</strong></td>
+            let row = `<tr ${rowClass}>
+                <td><strong>${num} ${isWin ? '🏆' : ''}</strong></td>
                 <td>${bets[num].count} ယောက်</td>
                 <td>${bets[num].amount.toLocaleString()} ကျပ်</td>
             </tr>`;
@@ -245,6 +404,8 @@
         if (confirm('စာရင်းအားလုံးကို ဖျက်ရန် သေချာပါသလား။')) {
             bets = {};
             document.getElementById('pasteArea').value = '';
+            document.getElementById('winningNumber').value = '';
+            document.getElementById('winResult').style.display = 'none';
             renderTable();
         }
     }
