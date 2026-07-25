@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Copy/Paste စာရင်းချုပ်</title>
+    <title>2D/3D Copy Paste စာရင်းချုပ်</title>
     <style>
         * {
             box-sizing: border-box;
@@ -37,7 +37,7 @@
         }
         textarea {
             width: 100%;
-            height: 150px;
+            height: 160px;
             padding: 12px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
@@ -110,10 +110,10 @@
 <body>
 
 <div class="container">
-    <h2>2D စာရင်းချုပ်</h2>
-    <p class="subtitle">ဥပမာ- 13.24.35R500 (သို့) 23 52 40R500 (သို့) 23=100</p>
+    <h2>2D / 3D စာရင်းချုပ် Calculator</h2>
+    <p class="subtitle">ဥပမာ- 321R100 (၆ ကွက်ခွဲမည်) ၊ 78-71-73 R500 (၂ လုံး အလှည့်) ၊ 321 100</p>
     
-    <textarea id="pasteArea" placeholder="ဒီနေရာမှာ Copy Paste လုပ်ပါ...&#10;13.24.35R500&#10;23 52 40R500&#10;12=1000"></textarea>
+    <textarea id="pasteArea" placeholder="ဒီနေရာမှာ Copy Paste လုပ်ပါ...&#10;321R100&#10;78-71-73 R500&#10;08-01-03 R500"></textarea>
 
     <div class="btn-group">
         <button onclick="processData()">စာရင်းတွက်မည်</button>
@@ -134,7 +134,7 @@
     </table>
 
     <div class="total-summary">
-        <span>စုစုပေါင်း ကျသင့်ငွေ:</span>
+        <span>စုစုပေါင်း ရငွေ:</span>
         <span id="grandTotal">0 ကျပ်</span>
     </div>
 </div>
@@ -156,6 +156,21 @@
         }
     }
 
+    // ဂဏန်း၏ ပတ်လည် အလှည့်အကွက်များ အားလုံးကို ထုတ်ပေးသည့် function (Permutations)
+    function getPermutations(str) {
+        if (str.length <= 1) return [str];
+        let permutations = [];
+        for (let i = 0; i < str.length; i++) {
+            let char = str[i];
+            let remaining = str.slice(0, i) + str.slice(i + 1);
+            for (let sub of getPermutations(remaining)) {
+                permutations.push(char + sub);
+            }
+        }
+        // ထပ်နေသော ဂဏန်းများကို ဖယ်ထုတ်ရန် (ဥပမာ- 112 ဆိုရင် ၃ ကွက်ပဲ ထွက်မည်)
+        return [...new Set(permutations)];
+    }
+
     function processData() {
         const text = document.getElementById('pasteArea').value;
         if (!text.trim()) return;
@@ -166,43 +181,36 @@
             let trimmed = line.trim();
             if (!trimmed) return;
 
-            // ဂဏန်းများစွာနှင့် R ပါဝင်သော ပုံစံ (ဥပမာ- 13.24.35R500, 23 52 40R500, 23,52,40 r 500)
-            let multiRMatch = trimmed.match(/^([\d\s,.]+)[Rr]\s*(\d+)$/);
+            // ၁။ R ပါဝင်သော ပုံစံများ (ဥပမာ- 321R100, 78-71-73 R500)
+            let rMatch = trimmed.match(/^(.*?)\s*[Rr]\s*(\d+)$/);
 
-            if (multiRMatch) {
-                let numsText = multiRMatch[1];
-                let amount = parseInt(multiRMatch[2]);
+            if (rMatch) {
+                let numsText = rMatch[1];
+                let amount = parseInt(rMatch[2]);
 
                 let numbers = numsText.match(/\d+/g);
                 if (numbers) {
                     numbers.forEach(num => {
-                        addBet(num, amount);
-
-                        let reverseNum = num.length === 1 ? num + '0' : num.split('').reverse().join('');
-                        if (num !== reverseNum) {
-                            addBet(reverseNum, amount);
-                        }
+                        // ဂဏန်း၏ အလှည့်ပတ်လည် အကွက်များ အားလုံးကို ယူမည်
+                        let permutedList = getPermutations(num);
+                        permutedList.forEach(pNum => {
+                            addBet(pNum, amount);
+                        });
                     });
                 }
             } else {
-                // ဂဏန်းများစွာနှင့် =, -, : ပါဝင်သော ပုံစံ (ဥပမာ- 13.24.35=500)
-                let multiMatch = trimmed.match(/^([\d\s,.]+)[:=\-]\s*(\d+)$/);
+                // ၂။ R မပါဘဲ =, -, : သို့မဟုတ် Space ဖြင့် ပမာဏခွဲထားသော ပုံစံများ (ဥပမာ- 321 100, 22-100)
+                let eqMatch = trimmed.match(/^(.*?)\s*[:=\-\s]\s*(\d+)$/);
 
-                if (multiMatch) {
-                    let numsText = multiMatch[1];
-                    let amount = parseInt(multiMatch[2]);
+                if (eqMatch) {
+                    let numsText = eqMatch[1].trim();
+                    let amount = parseInt(eqMatch[2]);
 
                     let numbers = numsText.match(/\d+/g);
                     if (numbers) {
                         numbers.forEach(num => {
                             addBet(num, amount);
                         });
-                    }
-                } else {
-                    // Space သာခြားထားသော ရိုးရိုးပုံစံ (ဥပမာ- 23 500)
-                    let simpleMatch = trimmed.match(/^(\d{1,2})\s+(\d+)$/);
-                    if (simpleMatch) {
-                        addBet(simpleMatch[1], parseInt(simpleMatch[2]));
                     }
                 }
             }
