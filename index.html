@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D / 3D Calculator with History</title>
+    <title>2D / 3D Calculator with Detailed TXT History</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f4f6f9; margin: 0; padding: 15px; display: flex; justify-content: center; }
@@ -38,7 +38,7 @@
         button.action-btn:hover { opacity: 0.9; }
         .reset-btn { background-color: #e74c3c !important; }
 
-        /* Session Selection (Morning / Evening) */
+        /* Session Selector */
         .session-selector { display: flex; justify-content: center; gap: 20px; margin-bottom: 12px; background: #fff; padding: 8px; border-radius: 8px; border: 1px solid #e0e0e0; }
         .session-selector label { font-size: 14px; font-weight: bold; color: #34495e; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
@@ -60,9 +60,22 @@
         .profit-text { color: #27ae60; font-weight: bold; font-size: 15px; }
         .loss-text { color: #e74c3c; font-weight: bold; font-size: 15px; }
 
+        /* History Panel Control Bar */
+        .history-controls { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+        .history-controls label { font-size: 13px; font-weight: bold; color: #34495e; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        
+        .download-btn { background: #0284c7; color: white; border: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; width: 100%; justify-content: center; margin-bottom: 12px; }
+        .download-btn:hover { background: #0369a1; }
+
+        .delete-selected-btn { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; }
+        .delete-selected-btn:hover { background: #c0392b; }
+
         /* History Cards */
-        .history-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .history-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; font-weight: bold; }
+        .history-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; font-weight: bold; }
+        .card-checkbox { transform: scale(1.2); cursor: pointer; margin-right: 8px; }
+        .single-delete-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 15px; padding: 0 5px; }
+        .single-delete-btn:hover { color: #c0392b; }
     </style>
 </head>
 <body>
@@ -101,12 +114,11 @@
 
         <div id="subWin2D" class="panel">
             <div class="win-panel-box">
-                <!-- မနက် / ညနေ ရွေးရန် Radio Buttons -->
                 <div class="session-selector">
                     <label><input type="radio" name="session2D" value="မနက်" checked> 🌅 မနက် (12:01)</label>
                     <label><input type="radio" name="session2D" value="ညနေ"> 🌆 ညနေ (4:30)</label>
                 </div>
-                <input type="text" id="winNum2D" placeholder="2D ပေါက်ဂဏန်း ရိုက်ပါ (ဥပမာ- 25)" style="width: 100%; padding: 10px; margin-bottom: 10px; text-align: center; font-size: 18px;">
+                <input type="text" id="winNum2D" maxlength="2" inputmode="numeric" oninput="validateNumberInput(this, 2)" placeholder="2D ပေါက်ဂဏန်း (ဥပမာ- 25)" style="width: 100%; padding: 10px; margin-bottom: 10px; text-align: center; font-size: 18px;">
                 <button class="action-btn" style="width: 100%; background: #f39c12;" onclick="checkWinner('2D')">2D ပေါက်ဂဏန်း စစ်မည်</button>
                 <div id="winResult2D" class="win-result"></div>
             </div>
@@ -154,7 +166,7 @@
 
         <div id="subWin3D" class="panel">
             <div class="win-panel-box" style="border-color: #8e44ad;">
-                <input type="text" id="winNum3D" placeholder="3D ပေါက်ဂဏန်း ရိုက်ပါ (ဥပမာ- 321)" style="width: 100%; padding: 10px; margin-bottom: 10px; text-align: center; font-size: 18px;">
+                <input type="text" id="winNum3D" maxlength="3" inputmode="numeric" oninput="validateNumberInput(this, 3)" placeholder="3D ပေါက်ဂဏန်း (ဥပမာ- 321)" style="width: 100%; padding: 10px; margin-bottom: 10px; text-align: center; font-size: 18px;">
                 <button class="action-btn" style="width: 100%; background: #8e44ad;" onclick="checkWinner('3D')">3D ပေါက်ဂဏန်း စစ်မည်</button>
                 <div id="winResult3D" class="win-result"></div>
             </div>
@@ -184,8 +196,23 @@
             <label>🔍 ရက်စွဲအလိုက် စစ်ဆေးရန်:</label>
             <input type="date" id="filterDate" onchange="renderHistory()">
         </div>
+
+        <!-- Text File Download Button -->
+        <button id="downloadTxtBtn" class="download-btn" onclick="downloadDailyTxtReport()" style="display: none;">
+            📥 ယနေ့ စာရင်းတစ်ခုလုံးကို (.txt) File အဖြစ် သိမ်းမည်
+        </button>
+
+        <!-- History Bulk Delete Controls -->
+        <div id="historyControls" class="history-controls" style="display: none;">
+            <label>
+                <input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this)">
+                အကုန်လုံး ရွေးရန်
+            </label>
+            <button class="delete-selected-btn" onclick="deleteSelectedHistory()">🗑️ ရွေးထားသည်များ ဖျက်မည်</button>
+        </div>
+
         <div id="historyList">
-            <!-- 2D / 3D ရက်စွဲအလိုက် မှတ်တမ်းများ ဒီမှာပေါ်မည် -->
+            <!-- ရက်စွဲအလိုက် မှတ်တမ်းများ ဒီမှာပေါ်မည် -->
         </div>
     </div>
 </div>
@@ -194,7 +221,6 @@
     const RATE_2D = 80;  
     const RATE_3D = 500; 
 
-    // ယနေ့ရက်စွဲ အလိုအလျောက် သတ်မှတ်ခြင်း (မှတ်တမ်းစစ်ရန်အတွက်)
     const todayStr = new Date().toISOString().split('T')[0];
     document.getElementById('filterDate').value = todayStr;
 
@@ -220,6 +246,13 @@
         'စုံမ': ['01', '03', '05', '07', '09', '21', '23', '25', '27', '29', '41', '43', '45', '47', '49', '61', '63', '65', '67', '69', '81', '83', '85', '87', '89'],
         'မစုံ': ['10', '12', '14', '16', '18', '30', '32', '34', '36', '38', '50', '52', '54', '56', '58', '70', '72', '74', '76', '78', '90', '92', '94', '96', '98']
     };
+
+    function validateNumberInput(input, maxLen) {
+        input.value = input.value.replace(/[^0-9]/g, '');
+        if (input.value.length > maxLen) {
+            input.value = input.value.slice(0, maxLen);
+        }
+    }
 
     function saveData() {
         localStorage.setItem('bets2D', JSON.stringify(bets2D));
@@ -523,10 +556,10 @@
         let winNum = winNumInput.value.trim();
         let currentDate = new Date().toISOString().split('T')[0];
 
-        if (!winNum) { alert('ပေါက်ဂဏန်း ရိုက်ထည့်ပါ!'); return; }
-        if (mode === '2D' && winNum.length === 1) winNum = '0' + winNum;
+        if (!winNum) { alert(`${mode} ပေါက်ဂဏန်း ရိုက်ထည့်ပါ!`); return; }
+        if (mode === '2D' && winNum.length !== 2) { alert('2D ပေါက်ဂဏန်းသည် (၂) လုံး ကွက်တိ ဖြစ်ရပါမည်!'); return; }
+        if (mode === '3D' && winNum.length !== 3) { alert('3D ပေါက်ဂဏန်းသည် (၃) လုံး ကွက်တိ ဖြစ်ရပါမည်!'); return; }
 
-        // 2D ဖြစ်ပါက မနက် သို့မဟုတ် ညနေ ရွေးချယ်ထားမှုကို ရယူခြင်း
         let sessionText = "";
         if (mode === '2D') {
             let sessionRadio = document.querySelector('input[name="session2D"]:checked');
@@ -557,7 +590,7 @@
         let netProfit = grandTotal - totalPayout;
         let displayModeText = (mode === '2D') ? `2D (${sessionText})` : '3D';
 
-        // ရက်စွဲအလိုက် History Log ထဲသို့ 2D/3D မှတ်တမ်း သိမ်းဆည်းခြင်း
+        // History Log ထဲသို့ bets စာရင်းပါ ပူးတွဲသိမ်းဆည်းခြင်း
         historyLog.unshift({
             id: Date.now(),
             date: currentDate,
@@ -567,13 +600,14 @@
             grandTotal: grandTotal,
             totalPayout: totalPayout,
             netProfit: netProfit,
+            bets2D: (mode === '2D') ? JSON.parse(JSON.stringify(bets2D)) : null,
+            bets3D: (mode === '3D') ? JSON.parse(JSON.stringify(bets3D)) : null,
             customers: JSON.parse(JSON.stringify(customers)),
             winners: winnersList
         });
 
         saveData();
 
-        // ရလဒ် ပြသခြင်း
         let profitStatus = (netProfit >= 0) 
             ? `<span class="profit-text">💰 ဒိုင် အမြတ်: +${netProfit.toLocaleString()} ကျပ်</span>`
             : `<span class="loss-text">⚠️ ဒိုင် အရှုံး: ${netProfit.toLocaleString()} ကျပ်</span>`;
@@ -594,18 +628,28 @@
         `;
     }
 
-    // 2D ရော 3D ရော မှတ်တမ်းများ ပြသပေးသည့် Function
+    // History Panel - Render & TXT Export
     function renderHistory() {
         const filterDate = document.getElementById('filterDate').value;
         const historyList = document.getElementById('historyList');
+        const historyControls = document.getElementById('historyControls');
+        const downloadTxtBtn = document.getElementById('downloadTxtBtn');
+        const selectAllCheckbox = document.getElementById('selectAllHistory');
+        
         historyList.innerHTML = '';
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
 
         let filtered = historyLog.filter(item => item.date === filterDate);
 
         if (filtered.length === 0) {
+            historyControls.style.display = 'none';
+            downloadTxtBtn.style.display = 'none';
             historyList.innerHTML = `<div style="text-align:center; color:#aaa; margin-top:20px;">📅 ${filterDate} ရက်နေ့အတွက် သိမ်းထားသော မှတ်တမ်း မရှိသေးပါ</div>`;
             return;
         }
+
+        historyControls.style.display = 'flex';
+        downloadTxtBtn.style.display = 'flex';
 
         filtered.forEach(item => {
             let profitClass = item.netProfit >= 0 ? 'profit-text' : 'loss-text';
@@ -619,10 +663,16 @@
             let sessionDisplay = (item.mode === '2D' && item.session) ? ` - ${item.session}` : '';
 
             historyList.innerHTML += `
-                <div class="history-card">
+                <div class="history-card" id="card-${item.id}">
                     <div class="history-header">
-                        <span>📅 ${item.date} (<b style="color:${item.mode==='2D'?'#3498db':'#8e44ad'};">${item.mode}${sessionDisplay}</b>)</span>
-                        <span style="color:#d35400;">ပေါက်ဂဏန်း: [ ${item.winNum} ]</span>
+                        <div style="display:flex; align-items:center;">
+                            <input type="checkbox" class="card-checkbox history-item-checkbox" value="${item.id}">
+                            <span>📅 ${item.date} (<b style="color:${item.mode==='2D'?'#3498db':'#8e44ad'};">${item.mode}${sessionDisplay}</b>)</span>
+                        </div>
+                        <div>
+                            <span style="color:#d35400; margin-right:8px;">[ ${item.winNum} ]</span>
+                            <button class="single-delete-btn" onclick="deleteSingleHistory(${item.id})" title="ဖျက်မည်">🗑️</button>
+                        </div>
                     </div>
                     <div style="margin-top:8px; font-size:13px; line-height:1.6;">
                         <div>👥 <b>ထိုးသူများ:</b> ${custList.join(', ') || 'မရှိပါ'}</div>
@@ -633,6 +683,111 @@
                 </div>
             `;
         });
+    }
+
+    // Download Daily Text File Function (အသေးစိတ် ထိုးကြေး စာရင်းပါဝင်ပြီး UTF-8 Font မပျက်အောင် BOM ထည့်ထားသည်)
+    function downloadDailyTxtReport() {
+        const filterDate = document.getElementById('filterDate').value;
+        let filtered = historyLog.filter(item => item.date === filterDate);
+
+        if (filtered.length === 0) {
+            alert('ဒေါင်းလုဒ်လုပ်ရန် စာရင်းမှတ်တမ်း မရှိပါ။');
+            return;
+        }
+
+        let txtContent = `=========================================\n`;
+        txtContent += `      2D / 3D စာရင်းချုပ် မှတ်တမ်း\n`;
+        txtContent += `      ရက်စွဲ: ${filterDate}\n`;
+        txtContent += `=========================================\n\n`;
+
+        filtered.forEach((item, idx) => {
+            let sessionDisplay = (item.mode === '2D' && item.session) ? ` (${item.session})` : '';
+            txtContent += `[ ${idx + 1} ] ${item.mode}${sessionDisplay} စာရင်း\n`;
+            txtContent += `-----------------------------------------\n`;
+            txtContent += `🎯 ပေါက်ဂဏန်း: ${item.winNum}\n`;
+            txtContent += `📥 စုစုပေါင်း ရငွေ: ${item.grandTotal.toLocaleString()} ကျပ်\n`;
+            txtContent += `💸 စုစုပေါင်း လျော်ကြေး: ${item.totalPayout.toLocaleString()} ကျပ်\n`;
+            txtContent += `📊 ${item.netProfit >= 0 ? 'ဒိုင် အမြတ်' : 'ဒိုင် အရှုံး'}: ${item.netProfit.toLocaleString()} ကျပ်\n\n`;
+
+            // ---------------- 1. ထိုးသူတစ်ဦးချင်းစီ အသေးစိတ်နံပါတ်စာရင်း ----------------
+            txtContent += `👤 ထိုးသူတစ်ဦးချင်းစီ အသေးစိတ် စာရင်း:\n`;
+            txtContent += `-----------------------------------------\n`;
+            
+            let customerBetsDetail = {};
+            let targetBets = (item.mode === '2D') ? item.bets2D : item.bets3D;
+
+            if (targetBets) {
+                for (let num in targetBets) {
+                    let buyers = targetBets[num].buyers;
+                    for (let cName in buyers) {
+                        if (!customerBetsDetail[cName]) customerBetsDetail[cName] = [];
+                        customerBetsDetail[cName].push({ num: num, amount: buyers[cName] });
+                    }
+                }
+            }
+
+            for (let c in item.customers) {
+                txtContent += `► ${c} (စုစုပေါင်း: ${item.customers[c].count} ကွက် / ${item.customers[c].totalAmount.toLocaleString()} ကျပ်)\n`;
+                
+                if (customerBetsDetail[c] && customerBetsDetail[c].length > 0) {
+                    customerBetsDetail[c].forEach(b => {
+                        txtContent += `    • ${b.num} = ${b.amount.toLocaleString()} ကျပ်\n`;
+                    });
+                } else {
+                    txtContent += `    • အသေးစိတ်ဂဏန်းစာရင်း မရှိပါ\n`;
+                }
+                txtContent += `\n`;
+            }
+
+            // ---------------- 2. ပေါက်သူများ အသေးစိတ် ----------------
+            if (item.winners && item.winners.length > 0) {
+                txtContent += `🎉 ပေါက်သူများ အသေးစိတ်:\n`;
+                item.winners.forEach(w => {
+                    txtContent += `  - ${w.name}: ထိုးကြေး ${w.bet.toLocaleString()} ကျပ် -> ပေါက်ကြေး ${w.win.toLocaleString()} ကျပ်\n`;
+                });
+            } else {
+                txtContent += `🎉 ပေါက်သူများ: မရှိပါ\n`;
+            }
+
+            txtContent += `\n=========================================\n\n`;
+        });
+
+        // UTF-8 BOM ('\uFEFF') ထည့်သွင်းပေးထား၍ မြန်မာစာ Font စာလုံးပေါင်း မပျက်တော့ပါ
+        const blob = new Blob(['\uFEFF' + txtContent], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `2D_3D_Report_${filterDate}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function toggleSelectAllHistory(master) {
+        let checkboxes = document.querySelectorAll('.history-item-checkbox');
+        checkboxes.forEach(cb => cb.checked = master.checked);
+    }
+
+    function deleteSingleHistory(id) {
+        if (confirm('ဤမှတ်တမ်းကို ဖျက်ရန် သေချာပါသလား။')) {
+            historyLog = historyLog.filter(item => item.id !== id);
+            saveData();
+            renderHistory();
+        }
+    }
+
+    function deleteSelectedHistory() {
+        let selectedCheckboxes = document.querySelectorAll('.history-item-checkbox:checked');
+        if (selectedCheckboxes.length === 0) {
+            alert('ဖျက်လိုသည့် မှတ်တမ်းကို အရင် select လုပ်ပေးပါ!');
+            return;
+        }
+
+        if (confirm(`ရွေးချယ်ထားသော မှတ်တမ်း (${selectedCheckboxes.length}) ခုကို ဖျက်ရန် သေချာပါသလား။`)) {
+            let selectedIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+            historyLog = historyLog.filter(item => !selectedIds.includes(item.id));
+            saveData();
+            renderHistory();
+        }
     }
 
     function resetData(mode) {
