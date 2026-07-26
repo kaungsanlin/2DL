@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D / 3D Calculator with Detailed TXT History</title>
+    <title>2D / 3D Calculator with Selected TXT Download</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f4f6f9; margin: 0; padding: 15px; display: flex; justify-content: center; }
@@ -197,12 +197,7 @@
             <input type="date" id="filterDate" onchange="renderHistory()">
         </div>
 
-        <!-- Text File Download Button -->
-        <button id="downloadTxtBtn" class="download-btn" onclick="downloadDailyTxtReport()" style="display: none;">
-            📥 ယနေ့ စာရင်းတစ်ခုလုံးကို (.txt) File အဖြစ် သိမ်းမည်
-        </button>
-
-        <!-- History Bulk Delete Controls -->
+        <!-- History Bulk Controls -->
         <div id="historyControls" class="history-controls" style="display: none;">
             <label>
                 <input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this)">
@@ -210,6 +205,11 @@
             </label>
             <button class="delete-selected-btn" onclick="deleteSelectedHistory()">🗑️ ရွေးထားသည်များ ဖျက်မည်</button>
         </div>
+
+        <!-- Download Selected Text File Button -->
+        <button id="downloadTxtBtn" class="download-btn" onclick="downloadSelectedTxtReport()" style="display: none;">
+            📥 ရွေးထားသည်များကို (.txt) Download ဆွဲမည်
+        </button>
 
         <div id="historyList">
             <!-- ရက်စွဲအလိုက် မှတ်တမ်းများ ဒီမှာပေါ်မည် -->
@@ -590,7 +590,6 @@
         let netProfit = grandTotal - totalPayout;
         let displayModeText = (mode === '2D') ? `2D (${sessionText})` : '3D';
 
-        // History Log ထဲသို့ bets စာရင်းပါ ပူးတွဲသိမ်းဆည်းခြင်း
         historyLog.unshift({
             id: Date.now(),
             date: currentDate,
@@ -628,7 +627,7 @@
         `;
     }
 
-    // History Panel - Render & TXT Export
+    // History Panel
     function renderHistory() {
         const filterDate = document.getElementById('filterDate').value;
         const historyList = document.getElementById('historyList');
@@ -685,22 +684,25 @@
         });
     }
 
-    // Download Daily Text File Function (အသေးစိတ် ထိုးကြေး စာရင်းပါဝင်ပြီး UTF-8 Font မပျက်အောင် BOM ထည့်ထားသည်)
-    function downloadDailyTxtReport() {
+    // 🔥 Download Selected History Items Only (ရွေးထားသည့် မှတ်တမ်းများကိုသာ TXT ဆွဲမည်)
+    function downloadSelectedTxtReport() {
         const filterDate = document.getElementById('filterDate').value;
-        let filtered = historyLog.filter(item => item.date === filterDate);
+        let selectedCheckboxes = document.querySelectorAll('.history-item-checkbox:checked');
 
-        if (filtered.length === 0) {
-            alert('ဒေါင်းလုဒ်လုပ်ရန် စာရင်းမှတ်တမ်း မရှိပါ။');
+        if (selectedCheckboxes.length === 0) {
+            alert('ဒေါင်းလုဒ်ဆွဲလိုသည့် မှတ်တမ်းအကွက်များကို အရင် Checkbox (အမှန်ခြစ်) ရွေးပေးပါ!');
             return;
         }
 
+        let selectedIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+        let selectedItems = historyLog.filter(item => selectedIds.includes(item.id));
+
         let txtContent = `=========================================\n`;
-        txtContent += `      2D / 3D စာရင်းချုပ် မှတ်တမ်း\n`;
-        txtContent += `      ရက်စွဲ: ${filterDate}\n`;
+        txtContent += `      2D / 3D စာရင်းချုပ် မှတ်တမ်း (ရွေးချယ်ထားသော စာရင်းများ)\n`;
+        txtContent += `      ထုတ်ယူသည့်ရက်စွဲ: ${filterDate}\n`;
         txtContent += `=========================================\n\n`;
 
-        filtered.forEach((item, idx) => {
+        selectedItems.forEach((item, idx) => {
             let sessionDisplay = (item.mode === '2D' && item.session) ? ` (${item.session})` : '';
             txtContent += `[ ${idx + 1} ] ${item.mode}${sessionDisplay} စာရင်း\n`;
             txtContent += `-----------------------------------------\n`;
@@ -709,7 +711,6 @@
             txtContent += `💸 စုစုပေါင်း လျော်ကြေး: ${item.totalPayout.toLocaleString()} ကျပ်\n`;
             txtContent += `📊 ${item.netProfit >= 0 ? 'ဒိုင် အမြတ်' : 'ဒိုင် အရှုံး'}: ${item.netProfit.toLocaleString()} ကျပ်\n\n`;
 
-            // ---------------- 1. ထိုးသူတစ်ဦးချင်းစီ အသေးစိတ်နံပါတ်စာရင်း ----------------
             txtContent += `👤 ထိုးသူတစ်ဦးချင်းစီ အသေးစိတ် စာရင်း:\n`;
             txtContent += `-----------------------------------------\n`;
             
@@ -739,7 +740,6 @@
                 txtContent += `\n`;
             }
 
-            // ---------------- 2. ပေါက်သူများ အသေးစိတ် ----------------
             if (item.winners && item.winners.length > 0) {
                 txtContent += `🎉 ပေါက်သူများ အသေးစိတ်:\n`;
                 item.winners.forEach(w => {
@@ -752,11 +752,11 @@
             txtContent += `\n=========================================\n\n`;
         });
 
-        // UTF-8 BOM ('\uFEFF') ထည့်သွင်းပေးထား၍ မြန်မာစာ Font စာလုံးပေါင်း မပျက်တော့ပါ
+        // UTF-8 BOM ('\uFEFF') ထည့်သွင်းထားသဖြင့် Font မပျက်ပါ
         const blob = new Blob(['\uFEFF' + txtContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `2D_3D_Report_${filterDate}.txt`;
+        link.download = `2D_3D_Report_Selected_${filterDate}.txt`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
