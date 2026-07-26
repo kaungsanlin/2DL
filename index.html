@@ -30,7 +30,7 @@
         .input-group input { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; }
         .input-group input:focus { border-color: #3498db; }
 
-        textarea { width: 100%; height: 110px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; resize: vertical; }
+        textarea { width: 100%; height: 120px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; resize: vertical; }
 
         .btn-group { display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px; }
         button.action-btn { flex: 1; padding: 12px; background-color: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
@@ -81,7 +81,7 @@
             </div>
             <div class="input-group">
                 <label>📄 2D ထိုးကြေးစာရင်း:</label>
-                <textarea id="pasteArea2D" placeholder="25 500&#10;1ထိပ် 500&#10;2ပိတ် 300&#10;123ခွေ 100&#10;123ခွေပူး 100"></textarea>
+                <textarea id="pasteArea2D" placeholder="25 500&#10;1ထိပ် 500 / 2ပိတ် 300&#10;123ခွေ 100 / 123ခွေပူး 100&#10;0ဘရိတ် 500 / စုံစုံ 1000&#10;အပူး 500 / နက္ခတ် 500"></textarea>
             </div>
             <div class="btn-group">
                 <button class="action-btn" onclick="processData('2D')">2D စာရင်းသိမ်းမည်</button>
@@ -129,7 +129,7 @@
             </div>
             <div class="input-group">
                 <label>📄 3D ထိုးကြေးစာရင်း:</label>
-                <textarea id="pasteArea3D" placeholder="321 500&#10;321R100"></textarea>
+                <textarea id="pasteArea3D" placeholder="321 500&#10;321R100 / 321ပတ် 100&#10;12ထိပ် 500 / 23နောက် 500"></textarea>
             </div>
             <div class="btn-group">
                 <button class="action-btn" style="background-color: #8e44ad;" onclick="processData('3D')">3D စာရင်းသိမ်းမည်</button>
@@ -182,7 +182,11 @@
         'ပါဝါ': ['05', '16', '27', '38', '49', '50', '61', '72', '83', '94'],
         'နတ်ခတ်': ['18', '24', '35', '07', '96', '81', '42', '53', '70', '69'],
         'နက္ခတ်': ['18', '24', '35', '07', '96', '81', '42', '53', '70', '69'],
-        'ညီကို': ['01', '12', '23', '34', '45', '56', '67', '78', '89', '90', '10', '21', '32', '43', '54', '65', '76', '87', '98', '09']
+        'ညီကို': ['01', '12', '23', '34', '45', '56', '67', '78', '89', '90', '10', '21', '32', '43', '54', '65', '76', '87', '98', '09'],
+        'စုံစုံ': ['00', '02', '04', '06', '08', '20', '22', '24', '26', '28', '40', '42', '44', '46', '48', '60', '62', '64', '66', '68', '80', '82', '84', '86', '88'],
+        'မမ': ['11', '13', '15', '17', '19', '31', '33', '35', '37', '39', '51', '53', '55', '57', '59', '71', '73', '75', '77', '79', '91', '93', '95', '97', '99'],
+        'စုံမ': ['01', '03', '05', '07', '09', '21', '23', '25', '27', '29', '41', '43', '45', '47', '49', '61', '63', '65', '67', '69', '81', '83', '85', '87', '89'],
+        'မစုံ': ['10', '12', '14', '16', '18', '30', '32', '34', '36', '38', '50', '52', '54', '56', '58', '70', '72', '74', '76', '78', '90', '92', '94', '96', '98']
     };
 
     function saveData() {
@@ -248,7 +252,6 @@
         return [...new Set(permutations)];
     }
 
-    // 💡 ခွေဂဏန်းများကို တွက်ချက်ပေးသည့် Function
     function getKhwayNumbers(digitsStr, includePuu = false) {
         let digits = [...new Set(digitsStr.split(''))];
         let results = [];
@@ -270,87 +273,167 @@
         if (!text.trim()) return;
 
         const lines = text.split('\n');
+        let invalidLines = [];
 
         lines.forEach(line => {
             let trimmed = line.trim();
             if (!trimmed) return;
 
-            // ၁။ အပူး၊ ပါဝါ၊ နက္ခတ်၊ ညီကို စစ်ဆေးခြင်း
-            let specialMatch = trimmed.match(/^(အ?ပူး|ပါဝါ|နတ်ခတ်|နက္ခတ်|ညီကို)\s*[:=\-\s]*\s*(\d+)$/i);
-            if (specialMatch && mode === '2D') {
-                let keyword = specialMatch[1];
-                let amount = parseInt(specialMatch[2]);
-                if (specialSets[keyword]) {
-                    specialSets[keyword].forEach(num => addBet('2D', num, amount, cName));
+            // 2D အတွက် စစ်ဆေးခြင်း
+            if (mode === '2D') {
+                // အထူးအုပ်စုများ (အပူး၊ ပါဝါ၊ နက္ခတ်၊ ညီကို၊ စုံစုံ၊ မမ စသဖြင့်)
+                let specialMatch = trimmed.match(/^(အ?ပူး|ပါဝါ|နတ်ခတ်|နက္ခတ်|ညီကို|စုံစုံ|မမ|စုံမ|မစုံ)\s*[:=\-\s]*\s*(\d+)$/i);
+                if (specialMatch) {
+                    let keyword = specialMatch[1];
+                    let amount = parseInt(specialMatch[2]);
+                    if (specialSets[keyword]) {
+                        specialSets[keyword].forEach(num => addBet('2D', num, amount, cName));
+                    }
+                    return;
                 }
-                return;
-            }
 
-            // ၂။ ၁ထိပ် ၊ ၁ပိတ် / ၁နောက် စစ်ဆေးခြင်း
-            let headMatch = trimmed.match(/^(\d)ထိပ်\s*[:=\-\s]*\s*(\d+)$/);
-            if (headMatch && mode === '2D') {
-                let hDigit = headMatch[1];
-                let amount = parseInt(headMatch[2]);
-                for (let i = 0; i <= 9; i++) {
-                    addBet('2D', hDigit + i, amount, cName);
+                // ဘရိတ် စစ်ဆေးခြင်း (ဥပမာ - 0ဘရိတ် 1000 / 0b 1000)
+                let brakeMatch = trimmed.match(/^(\d)(?:ဘရိတ်|b)\s*[:=\-\s]*\s*(\d+)$/i);
+                if (brakeMatch) {
+                    let targetBrake = parseInt(brakeMatch[1]);
+                    let amount = parseInt(brakeMatch[2]);
+                    for (let i = 0; i <= 99; i++) {
+                        let numStr = i < 10 ? '0' + i : '' + i;
+                        let sum = (parseInt(numStr[0]) + parseInt(numStr[1])) % 10;
+                        if (sum === targetBrake) {
+                            addBet('2D', numStr, amount, cName);
+                        }
+                    }
+                    return;
                 }
-                return;
-            }
 
-            let tailMatch = trimmed.match(/^(\d)(?:ပိတ်|နောက်)\s*[:=\-\s]*\s*(\d+)$/);
-            if (tailMatch && mode === '2D') {
-                let tDigit = tailMatch[1];
-                let amount = parseInt(tailMatch[2]);
-                for (let i = 0; i <= 9; i++) {
-                    addBet('2D', i + tDigit, amount, cName);
+                // ထိပ် / ပိတ် စစ်ဆေးခြင်း
+                let headMatch = trimmed.match(/^(\d)ထိပ်\s*[:=\-\s]*\s*(\d+)$/);
+                if (headMatch) {
+                    let hDigit = headMatch[1];
+                    let amount = parseInt(headMatch[2]);
+                    for (let i = 0; i <= 9; i++) addBet('2D', hDigit + i, amount, cName);
+                    return;
                 }
-                return;
-            }
 
-            // ၃။ ခွေပူး / ပူးခွေ စစ်ဆေးခြင်း (ဥပမာ- 123ခွေပူး 100 သို့မဟုတ် 123ပူးခွေ 100)
-            let khwayPuuMatch = trimmed.match(/^(\d+)(?:ခွေပူး|ပူးခွေ)\s*[:=\-\s]*\s*(\d+)$/);
-            if (khwayPuuMatch && mode === '2D') {
-                let digits = khwayPuuMatch[1];
-                let amount = parseInt(khwayPuuMatch[2]);
-                let khwayList = getKhwayNumbers(digits, true); // true = အပူးပါမည်
-                khwayList.forEach(num => addBet('2D', num, amount, cName));
-                return;
-            }
-
-            // ၄။ ရိုးရိုးခွေ စစ်ဆေးခြင်း (ဥပမာ- 123ခွေ 100)
-            let khwayMatch = trimmed.match(/^(\d+)ခွေ\s*[:=\-\s]*\s*(\d+)$/);
-            if (khwayMatch && mode === '2D') {
-                let digits = khwayMatch[1];
-                let amount = parseInt(khwayMatch[2]);
-                let khwayList = getKhwayNumbers(digits, false); // false = အပူးမပါပါ
-                khwayList.forEach(num => addBet('2D', num, amount, cName));
-                return;
-            }
-
-            // ၅။ R (ပတ်/အာ) စစ်ဆေးခြင်း (ဥပမာ- 123R100)
-            let rMatch = trimmed.match(/^(.*?)\s*[Rr]\s*(\d+)$/);
-            if (rMatch) {
-                let numsText = rMatch[1];
-                let amount = parseInt(rMatch[2]);
-                let numbers = numsText.match(/\d+/g);
-                if (numbers) {
-                    numbers.forEach(num => {
-                        let permutedList = getPermutations(num);
-                        permutedList.forEach(pNum => addBet(mode, pNum, amount, cName));
-                    });
+                let tailMatch = trimmed.match(/^(\d)(?:ပိတ်|နောက်)\s*[:=\-\s]*\s*(\d+)$/);
+                if (tailMatch) {
+                    let tDigit = tailMatch[1];
+                    let amount = parseInt(tailMatch[2]);
+                    for (let i = 0; i <= 9; i++) addBet('2D', i + tDigit, amount, cName);
+                    return;
                 }
-                return;
+
+                // ခွေပူး / ခွေ စစ်ဆေးခြင်း
+                let khwayPuuMatch = trimmed.match(/^(\d+)(?:ခွေပူး|ပူးခွေ)\s*[:=\-\s]*\s*(\d+)$/);
+                if (khwayPuuMatch) {
+                    let digits = khwayPuuMatch[1];
+                    let amount = parseInt(khwayPuuMatch[2]);
+                    let khwayList = getKhwayNumbers(digits, true);
+                    khwayList.forEach(num => addBet('2D', num, amount, cName));
+                    return;
+                }
+
+                let khwayMatch = trimmed.match(/^(\d+)ခွေ\s*[:=\-\s]*\s*(\d+)$/);
+                if (khwayMatch) {
+                    let digits = khwayMatch[1];
+                    let amount = parseInt(khwayMatch[2]);
+                    let khwayList = getKhwayNumbers(digits, false);
+                    khwayList.forEach(num => addBet('2D', num, amount, cName));
+                    return;
+                }
+
+                // 2D R (ပတ်/အာ) စစ်ဆေးခြင်း (ဥပမာ - 25R 500)
+                let rMatch2D = trimmed.match(/^(.*?)\s*(?:[Rr]|ပတ်|အာ)\s*(\d+)$/i);
+                if (rMatch2D) {
+                    let numsText = rMatch2D[1];
+                    let amount = parseInt(rMatch2D[2]);
+                    let numbers = numsText.match(/\d+/g);
+                    if (numbers) {
+                        let hasInvalidDigits = numbers.some(n => n.length > 2);
+                        if (hasInvalidDigits) { invalidLines.push(line); return; }
+                        numbers.forEach(num => {
+                            let permutedList = getPermutations(num.length === 1 ? '0' + num : num);
+                            permutedList.forEach(pNum => addBet('2D', pNum, amount, cName));
+                        });
+                    }
+                    return;
+                }
+
+                // ရိုးရိုး ၂ လုံးဂဏန်း စစ်ဆေးခြင်း
+                let eqMatch = trimmed.match(/^(.*?)\s*[:=\-\s]\s*(\d+)$/);
+                if (eqMatch) {
+                    let numsText = eqMatch[1].trim();
+                    let amount = parseInt(eqMatch[2]);
+                    let numbers = numsText.match(/\d+/g);
+                    
+                    if (numbers) {
+                        let hasInvalidDigits = numbers.some(n => n.length > 2);
+                        if (hasInvalidDigits) { invalidLines.push(line); return; }
+                        numbers.forEach(num => addBet('2D', num, amount, cName));
+                    }
+                    return;
+                }
+                invalidLines.push(line);
             }
 
-            // ၆။ ရိုးရိုးဂဏန်းများ (ဥပမာ- 25 500 သို့မဟုတ် 25=500 သို့မဟုတ် 25-500)
-            let eqMatch = trimmed.match(/^(.*?)\s*[:=\-\s]\s*(\d+)$/);
-            if (eqMatch) {
-                let numsText = eqMatch[1].trim();
-                let amount = parseInt(eqMatch[2]);
-                let numbers = numsText.match(/\d+/g);
-                if (numbers) numbers.forEach(num => addBet(mode, num, amount, cName));
+            // 3D အတွက် စစ်ဆေးခြင်း
+            if (mode === '3D') {
+                // 3D ထိပ် (ဥပမာ - 12ထိပ် 500)
+                let head3D = trimmed.match(/^(\d{2})ထိပ်\s*[:=\-\s]*\s*(\d+)$/);
+                if (head3D) {
+                    let prefix = head3D[1];
+                    let amount = parseInt(head3D[2]);
+                    for (let i = 0; i <= 9; i++) addBet('3D', prefix + i, amount, cName);
+                    return;
+                }
+
+                // 3D နောက် (ဥပမာ - 23နောက် 500)
+                let tail3D = trimmed.match(/^(\d{2})(?:နောက်|ပိတ်)\s*[:=\-\s]*\s*(\d+)$/);
+                if (tail3D) {
+                    let suffix = tail3D[1];
+                    let amount = parseInt(tail3D[2]);
+                    for (let i = 0; i <= 9; i++) addBet('3D', i + suffix, amount, cName);
+                    return;
+                }
+
+                // 3D R (ပတ်/အာ) စစ်ဆေးခြင်း (ဥပမာ - 321R 100 / 321ပတ် 100)
+                let rMatch3D = trimmed.match(/^(.*?)\s*(?:[Rr]|ပတ်|အာ)\s*(\d+)$/i);
+                if (rMatch3D) {
+                    let numsText = rMatch3D[1];
+                    let amount = parseInt(rMatch3D[2]);
+                    let numbers = numsText.match(/\d+/g);
+                    if (numbers) {
+                        let hasInvalidDigits = numbers.some(n => n.length !== 3);
+                        if (hasInvalidDigits) { invalidLines.push(line); return; }
+                        numbers.forEach(num => {
+                            let permutedList = getPermutations(num);
+                            permutedList.forEach(pNum => addBet('3D', pNum, amount, cName));
+                        });
+                    }
+                    return;
+                }
+
+                // ရိုးရိုး ၃ လုံးဂဏန်း စစ်ဆေးခြင်း
+                let eqMatch = trimmed.match(/^(.*?)\s*[:=\-\s]\s*(\d+)$/);
+                if (eqMatch) {
+                    let numsText = eqMatch[1].trim();
+                    let amount = parseInt(eqMatch[2]);
+                    let numbers = numsText.match(/\d+/g);
+                    if (numbers) {
+                        let hasInvalidDigits = numbers.some(n => n.length !== 3);
+                        if (hasInvalidDigits) { invalidLines.push(line); return; }
+                        numbers.forEach(num => addBet('3D', num, amount, cName));
+                    }
+                    return;
+                }
+                invalidLines.push(line);
             }
         });
+
+        if (invalidLines.length > 0) {
+            alert(`⚠️ အောက်ပါ စာရင်းများသည် ${mode} ပုံစံနှင့် မကိုက်ညီသဖြင့် ထည့်သွင်းမထားပါ:\n\n` + invalidLines.join('\n'));
+        }
 
         document.getElementById('pasteArea' + mode).value = '';
         renderTables(mode);
