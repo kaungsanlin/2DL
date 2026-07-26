@@ -3,242 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D / 3D စာရင်းချုပ် Calculator</title>
+    <title>2D / 3D Calculator</title>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background-color: #f4f6f9;
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 500px;
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #2c3e50;
-            margin-top: 5px;
-            margin-bottom: 5px;
-        }
-        p.subtitle {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 15px;
-            text-align: center;
-        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; margin: 5px 0 15px 0; }
 
-        /* Navigation Tabs */
-        .tab-buttons {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
-            background: #eee;
-            padding: 5px;
-            border-radius: 8px;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            font-size: 14px;
-            font-weight: bold;
-            border: none;
-            background: transparent;
-            color: #555;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.3s;
-        }
-        .tab-btn.active {
-            background: #ffffff;
-            color: #2c3e50;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        /* Main Mode Tabs (2D vs 3D) */
+        .main-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+        .main-tab-btn { flex: 1; padding: 12px; font-size: 16px; font-weight: bold; border: none; background: #e0e6ed; color: #475569; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        .main-tab-btn.active-2d { background: #3498db; color: white; }
+        .main-tab-btn.active-3d { background: #8e44ad; color: white; }
 
-        /* Panel Sections */
-        .panel {
-            display: none;
-        }
-        .panel.active {
-            display: block;
-        }
+        /* Sub Mode Tabs (Input vs Win Check) */
+        .sub-tabs { display: flex; gap: 5px; margin-bottom: 15px; background: #f1f5f9; padding: 4px; border-radius: 8px; }
+        .sub-tab-btn { flex: 1; padding: 8px; font-size: 13px; font-weight: bold; border: none; background: transparent; color: #64748b; cursor: pointer; border-radius: 6px; }
+        .sub-tab-btn.active { background: white; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-        textarea {
-            width: 100%;
-            height: 140px;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 15px;
-            outline: none;
-            resize: vertical;
-        }
-        textarea:focus { border-color: #3498db; }
+        .panel { display: none; }
+        .panel.active { display: block; }
 
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            margin-bottom: 15px;
-        }
-        button.action-btn {
-            flex: 1;
-            padding: 12px;
-            background-color: #2ecc71;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        /* Input Controls */
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-size: 13px; font-weight: bold; color: #34495e; margin-bottom: 5px; }
+        .input-group input { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; }
+        .input-group input:focus { border-color: #3498db; }
+
+        textarea { width: 100%; height: 90px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; resize: vertical; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px; }
+        button.action-btn { flex: 1; padding: 12px; background-color: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
         button.action-btn:hover { background-color: #27ae60; }
         .reset-btn { background-color: #e74c3c !important; }
-        .reset-btn:hover { background-color: #c0392b !important; }
 
-        /* Win Check Panel Style */
-        .win-panel-box {
-            background-color: #fffdf5;
-            border: 2px solid #f1c40f;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .win-input-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .win-input-wrapper input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #f1c40f;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            outline: none;
-        }
-        .win-check-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #f39c12;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .win-check-btn:hover { background-color: #d35400; }
-
-        .win-result {
-            margin-top: 15px;
-            padding: 12px;
-            background: #ffffff;
-            border-radius: 8px;
-            border: 1px dashed #f39c12;
-            display: none;
-        }
-
-        /* Table Style */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            padding: 10px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-        th {
-            background-color: #34495e;
-            color: white;
-        }
+        /* Tables */
+        .section-title { font-weight: bold; color: #34495e; margin-top: 15px; margin-bottom: 8px; padding-left: 5px; border-left: 4px solid #3498db; }
+        .title-3d { border-left-color: #8e44ad !important; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { padding: 8px; text-align: center; border-bottom: 1px solid #eee; font-size: 13px; }
+        th { background-color: #34495e; color: white; }
+        .th-3d { background-color: #8e44ad !important; }
+        .th-user { background-color: #27ae60 !important; }
         tr:nth-child(even) { background-color: #f9f9f9; }
-        .highlight-win {
-            background-color: #ffeaa7 !important;
-            font-weight: bold;
-        }
+        .highlight-win { background-color: #ffeaa7 !important; font-weight: bold; }
 
-        .total-summary {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #e8f4f8;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            color: #2c3e50;
-            font-size: 16px;
-        }
+        .total-summary { margin-top: 10px; padding: 12px; background-color: #e8f4f8; border-radius: 8px; display: flex; justify-content: space-between; font-weight: bold; color: #2c3e50; font-size: 14px; }
+        .win-panel-box { background-color: #fffdf5; border: 2px solid #f1c40f; border-radius: 10px; padding: 15px; }
+        .win-result { margin-top: 10px; padding: 12px; background: #fff; border-radius: 8px; border: 1px dashed #f39c12; display: none; line-height: 1.6; }
+        
+        .profit-text { color: #27ae60; font-weight: bold; font-size: 15px; }
+        .loss-text { color: #e74c3c; font-weight: bold; font-size: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>2D / 3D Calculator</h2>
-    <p class="subtitle">ဥပမာ- ပါဝါ 100 ၊ အပူး 500 ၊ 321R100 ၊ 321 100</p>
     
-    <!-- Panel ခွဲသည့် ခလုတ်များ -->
-    <div class="tab-buttons">
-        <button class="tab-btn active" onclick="switchTab('inputPanel', this)">📝 စာရင်းထည့်မည်</button>
-        <button class="tab-btn" onclick="switchTab('winPanel', this)">🎯 ပေါက်ဂဏန်းစစ်မည်</button>
+    <!-- Main Tabs: 2D vs 3D -->
+    <div class="main-tabs">
+        <button id="btnMode2D" class="main-tab-btn active-2d" onclick="switchMainMode('2D')">📊 2D Panel</button>
+        <button id="btnMode3D" class="main-tab-btn" onclick="switchMainMode('3D')">📊 3D Panel</button>
     </div>
 
-    <!-- Panel 1: Copy/Paste စာရင်းထည့်သည့်နေရာ -->
-    <div id="inputPanel" class="panel active">
-        <textarea id="pasteArea" placeholder="ဒီနေရာမှာ Copy Paste လုပ်ပါ...&#10;321 500&#10;321 300&#10;321 200"></textarea>
-
-        <div class="btn-group">
-            <button class="action-btn" onclick="processData()">စာရင်းတွက်မည်</button>
-            <button class="action-btn reset-btn" onclick="resetData()">ဖျက်မည်</button>
+    <!-- ================= 2D PANEL ================= -->
+    <div id="panel2D">
+        <div class="sub-tabs">
+            <button class="sub-tab-btn active" onclick="switchSubTab('2D', 'input', this)">📝 စာရင်းထည့်မည်</button>
+            <button class="sub-tab-btn" onclick="switchSubTab('2D', 'win', this)">🎯 ပေါက်ဂဏန်း / အရှုံးအမြတ်</button>
         </div>
-    </div>
 
-    <!-- Panel 2: ပေါက်ဂဏန်း သီးသန့်စစ်သည့် Panel -->
-    <div id="winPanel" class="panel">
-        <div class="win-panel-box">
-            <div class="win-input-wrapper">
-                <input type="text" id="winningNumber" placeholder="ပေါက်ဂဏန်း ရိုက်ထည့်ပါ (ဥပမာ- 321)">
-                <button class="win-check-btn" onclick="checkWinner()">ပေါက်ဂဏန်း စစ်မည်</button>
+        <div id="subInput2D" class="panel active">
+            <div class="input-group">
+                <label>👤 ထိုးသူအမည်:</label>
+                <input type="text" id="customerName2D" placeholder="ဥပမာ- ကိုကို ၊ မမ">
             </div>
-            <div id="winResult" class="win-result"></div>
+            <div class="input-group">
+                <label>📄 2D ထိုးကြေးစာရင်း:</label>
+                <textarea id="pasteArea2D" placeholder="25 500&#10;အပူး 100&#10;ပါဝါ 200"></textarea>
+            </div>
+            <div class="btn-group">
+                <button class="action-btn" onclick="processData('2D')">2D စာရင်းသိမ်းမည်</button>
+                <button class="action-btn reset-btn" onclick="resetData('2D')">ဖျက်မည်</button>
+            </div>
+        </div>
+
+        <div id="subWin2D" class="panel">
+            <div class="win-panel-box">
+                <input type="text" id="winNum2D" placeholder="2D ပေါက်ဂဏန်း ရိုက်ပါ (ဥပမာ- 25)" style="width: 100%; padding: 10px; margin-bottom: 10px; text-align: center; font-size: 18px;">
+                <button class="action-btn" style="width: 100%; background: #f39c12;" onclick="checkWinner('2D')">2D ပေါက်ဂဏန်း စစ်မည်</button>
+                <div id="winResult2D" class="win-result"></div>
+            </div>
+        </div>
+
+        <div class="section-title">📊 2D (၂ လုံး) စာရင်းချုပ်</div>
+        <table>
+            <thead><tr><th>ဂဏန်း</th><th>ထိုးထားသူများ</th><th>စုစုပေါင်း</th></tr></thead>
+            <tbody id="listTable2D"><tr><td colspan="3" style="color:#aaa;">စာရင်းမရှိသေးပါ</td></tr></tbody>
+        </table>
+
+        <div class="section-title">👤 2D ထိုးသူတစ်ဦးချင်းစီ စာရင်း</div>
+        <table>
+            <thead><tr><th class="th-user">အမည်</th><th class="th-user">ကွက်ရေ</th><th class="th-user">ကျသင့်ငွေ</th></tr></thead>
+            <tbody id="customerTable2D"><tr><td colspan="3" style="color:#aaa;">စာရင်းမရှိသေးပါ</td></tr></tbody>
+        </table>
+
+        <div class="total-summary">
+            <span>2D စုစုပေါင်း ရငွေ:</span>
+            <b id="total2D" style="color:#27ae60;">0 ကျပ်</b>
         </div>
     </div>
 
-    <!-- တူညီသော ဇယား (ဘယ် Panel မှာပဲဖြစ်ဖြစ် မြင်နေရမည်) -->
-    <table>
-        <thead>
-            <tr>
-                <th>ဂဏန်း</th>
-                <th>ထိုးသူ ဦးရေ</th>
-                <th>စုစုပေါင်း ပမာဏ</th>
-            </tr>
-        </thead>
-        <tbody id="listTable">
-            <!-- စာရင်းများ ဒီနေရာမှာ ပေါ်လာမည် -->
-        </tbody>
-    </table>
+    <!-- ================= 3D PANEL ================= -->
+    <div id="panel3D" style="display: none;">
+        <div class="sub-tabs">
+            <button class="sub-tab-btn active" onclick="switchSubTab('3D', 'input', this)">📝 စာရင်းထည့်မည်</button>
+            <button class="sub-tab-btn" onclick="switchSubTab('3D', 'win', this)">🎯 ပေါက်ဂဏန်း / အရှုံးအမြတ်</button>
+        </div>
 
-    <div class="total-summary">
-        <span>စုစုပေါင်း ရငွေ:</span>
-        <span id="grandTotal">0 ကျပ်</span>
+        <div id="subInput3D" class="panel active">
+            <div class="input-group">
+                <label>👤 ထိုးသူအမည်:</label>
+                <input type="text" id="customerName3D" placeholder="ဥပမာ- ကိုကို ၊ မမ">
+            </div>
+            <div class="input-group">
+                <label>📄 3D ထိုးကြေးစာရင်း:</label>
+                <textarea id="pasteArea3D" placeholder="321 500&#10;321R100"></textarea>
+            </div>
+            <div class="btn-group">
+                <button class="action-btn" style="background-color: #8e44ad;" onclick="processData('3D')">3D စာရင်းသိမ်းမည်</button>
+                <button class="action-btn reset-btn" onclick="resetData('3D')">ဖျက်မည်</button>
+            </div>
+        </div>
+
+        <div id="subWin3D" class="panel">
+            <div class="win-panel-box" style="border-color: #8e44ad;">
+                <input type="text" id="winNum3D" placeholder="3D ပေါက်ဂဏန်း ရိုက်ပါ (ဥပမာ- 321)" style="width: 100%; padding: 10px; margin-bottom: 10px; text-align: center; font-size: 18px;">
+                <button class="action-btn" style="width: 100%; background: #8e44ad;" onclick="checkWinner('3D')">3D ပေါက်ဂဏန်း စစ်မည်</button>
+                <div id="winResult3D" class="win-result"></div>
+            </div>
+        </div>
+
+        <div class="section-title title-3d">📊 3D (၃ လုံး) စာရင်းချုပ်</div>
+        <table>
+            <thead><tr><th class="th-3d">ဂဏန်း</th><th class="th-3d">ထိုးထားသူများ</th><th class="th-3d">စုစုပေါင်း</th></tr></thead>
+            <tbody id="listTable3D"><tr><td colspan="3" style="color:#aaa;">စာရင်းမရှိသေးပါ</td></tr></tbody>
+        </table>
+
+        <div class="section-title title-3d">👤 3D ထိုးသူတစ်ဦးချင်းစီ စာရင်း</div>
+        <table>
+            <thead><tr><th class="th-3d">အမည်</th><th class="th-3d">ကွက်ရေ</th><th class="th-3d">ကျသင့်ငွေ</th></tr></thead>
+            <tbody id="customerTable3D"><tr><td colspan="3" style="color:#aaa;">စာရင်းမရှိသေးပါ</td></tr></tbody>
+        </table>
+
+        <div class="total-summary" style="background-color: #f4ecf7;">
+            <span>3D စုစုပေါင်း ရငွေ:</span>
+            <b id="total3D" style="color:#8e44ad;">0 ကျပ်</b>
+        </div>
     </div>
 </div>
 
 <script>
-    let bets = {};
+    const RATE_2D = 80;  
+    const RATE_3D = 500; 
+
+    // စက်ထဲတွင် အလိုအလျောက် မှတ်ထားပေးရန် Storage မှ ပြန်ခေါ်ခြင်း
+    let bets2D = JSON.parse(localStorage.getItem('bets2D')) || {};
+    let customers2D = JSON.parse(localStorage.getItem('customers2D')) || {};
+    let grandTotal2D = parseFloat(localStorage.getItem('grandTotal2D')) || 0;
+
+    let bets3D = JSON.parse(localStorage.getItem('bets3D')) || {};
+    let customers3D = JSON.parse(localStorage.getItem('customers3D')) || {};
+    let grandTotal3D = parseFloat(localStorage.getItem('grandTotal3D')) || 0;
 
     const specialSets = {
         'အပူး': ['00', '11', '22', '33', '44', '55', '66', '77', '88', '99'],
@@ -249,28 +186,57 @@
         'ညီကို': ['01', '12', '23', '34', '45', '56', '67', '78', '89', '90', '10', '21', '32', '43', '54', '65', '76', '87', '98', '09']
     };
 
-    function switchTab(panelId, btn) {
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    // စာရင်း ပြောင်းလဲတိုင်း စက်ထဲတွင် သိမ်းဆည်းရန် Function
+    function saveData() {
+        localStorage.setItem('bets2D', JSON.stringify(bets2D));
+        localStorage.setItem('customers2D', JSON.stringify(customers2D));
+        localStorage.setItem('grandTotal2D', grandTotal2D);
+
+        localStorage.setItem('bets3D', JSON.stringify(bets3D));
+        localStorage.setItem('customers3D', JSON.stringify(customers3D));
+        localStorage.setItem('grandTotal3D', grandTotal3D);
+    }
+
+    function switchMainMode(mode) {
+        if (mode === '2D') {
+            document.getElementById('panel2D').style.display = 'block';
+            document.getElementById('panel3D').style.display = 'none';
+            document.getElementById('btnMode2D').className = 'main-tab-btn active-2d';
+            document.getElementById('btnMode3D').className = 'main-tab-btn';
+        } else {
+            document.getElementById('panel2D').style.display = 'none';
+            document.getElementById('panel3D').style.display = 'block';
+            document.getElementById('btnMode2D').className = 'main-tab-btn';
+            document.getElementById('btnMode3D').className = 'main-tab-btn active-3d';
+        }
+    }
+
+    function switchSubTab(mode, sub, btn) {
+        let parent = document.getElementById('panel' + mode);
+        parent.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        parent.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
         
-        document.getElementById(panelId).classList.add('active');
+        if (sub === 'input') {
+            document.getElementById('subInput' + mode).classList.add('active');
+        } else {
+            document.getElementById('subWin' + mode).classList.add('active');
+        }
         btn.classList.add('active');
     }
 
-    function addBet(num, amount) {
-        if (num.length === 1) num = '0' + num;
+    function addBet(mode, num, amount, cName) {
+        if (mode === '2D' && num.length === 1) num = '0' + num;
 
-        if (bets[num]) {
-            bets[num].amount += amount;
-            bets[num].count += 1;
-            bets[num].details.push(amount);
-        } else {
-            bets[num] = {
-                amount: amount,
-                count: 1,
-                details: [amount]
-            };
-        }
+        let bets = (mode === '2D') ? bets2D : bets3D;
+        let customers = (mode === '2D') ? customers2D : customers3D;
+
+        if (!bets[num]) bets[num] = { amount: 0, buyers: {} };
+        bets[num].amount += amount;
+        bets[num].buyers[cName] = (bets[num].buyers[cName] || 0) + amount;
+
+        if (!customers[cName]) customers[cName] = { totalAmount: 0, count: 0 };
+        customers[cName].totalAmount += amount;
+        customers[cName].count += 1;
     }
 
     function getPermutations(str) {
@@ -279,15 +245,16 @@
         for (let i = 0; i < str.length; i++) {
             let char = str[i];
             let remaining = str.slice(0, i) + str.slice(i + 1);
-            for (let sub of getPermutations(remaining)) {
-                permutations.push(char + sub);
-            }
+            for (let sub of getPermutations(remaining)) permutations.push(char + sub);
         }
         return [...new Set(permutations)];
     }
 
-    function processData() {
-        const text = document.getElementById('pasteArea').value;
+    function processData(mode) {
+        let cName = document.getElementById('customerName' + mode).value.trim();
+        const text = document.getElementById('pasteArea' + mode).value;
+
+        if (!cName) { alert('ကျေးဇူးပြု၍ "ထိုးသူအမည်" ထည့်ပေးပါ!'); return; }
         if (!text.trim()) return;
 
         const lines = text.split('\n');
@@ -297,18 +264,16 @@
             if (!trimmed) return;
 
             let specialMatch = trimmed.match(/^(အ?ပူး|ပါဝါ|နတ်ခတ်|နက္ခတ်|ညီကို)\s*[:=\-\s]*\s*(\d+)$/i);
-
-            if (specialMatch) {
+            if (specialMatch && mode === '2D') {
                 let keyword = specialMatch[1];
                 let amount = parseInt(specialMatch[2]);
                 if (specialSets[keyword]) {
-                    specialSets[keyword].forEach(num => addBet(num, amount));
+                    specialSets[keyword].forEach(num => addBet('2D', num, amount, cName));
                 }
                 return;
             }
 
             let rMatch = trimmed.match(/^(.*?)\s*[Rr]\s*(\d+)$/);
-
             if (rMatch) {
                 let numsText = rMatch[1];
                 let amount = parseInt(rMatch[2]);
@@ -316,7 +281,7 @@
                 if (numbers) {
                     numbers.forEach(num => {
                         let permutedList = getPermutations(num);
-                        permutedList.forEach(pNum => addBet(pNum, amount));
+                        permutedList.forEach(pNum => addBet(mode, pNum, amount, cName));
                     });
                 }
             } else {
@@ -325,90 +290,143 @@
                     let numsText = eqMatch[1].trim();
                     let amount = parseInt(eqMatch[2]);
                     let numbers = numsText.match(/\d+/g);
-                    if (numbers) {
-                        numbers.forEach(num => addBet(num, amount));
-                    }
+                    if (numbers) numbers.forEach(num => addBet(mode, num, amount, cName));
                 }
             }
         });
 
-        document.getElementById('pasteArea').value = '';
-        renderTable();
-        document.getElementById('winResult').style.display = 'none';
+        document.getElementById('pasteArea' + mode).value = '';
+        renderTables(mode);
+        saveData(); // အလိုအလျောက် မှတ်ထားမည်
     }
 
-    function checkWinner() {
-        let winNum = document.getElementById('winningNumber').value.trim();
-        let resultDiv = document.getElementById('winResult');
+    function renderTables(mode, highlightNum = '') {
+        let bets = (mode === '2D') ? bets2D : bets3D;
+        let customers = (mode === '2D') ? customers2D : customers3D;
 
-        if (!winNum) {
-            alert('ကျေးဇူးပြု၍ ပေါက်ဂဏန်း ရိုက်ထည့်ပါ!');
-            return;
+        const listTable = document.getElementById('listTable' + mode);
+        const custTable = document.getElementById('customerTable' + mode);
+
+        listTable.innerHTML = ''; custTable.innerHTML = '';
+        let totalSum = 0, numCount = 0;
+
+        for (let num in bets) {
+            let isWin = (num === highlightNum);
+            let rowClass = isWin ? 'class="highlight-win"' : '';
+            
+            let buyerDetails = [];
+            for (let name in bets[num].buyers) {
+                buyerDetails.push(`${name} (${bets[num].buyers[name]}ကျပ်)`);
+            }
+
+            listTable.innerHTML += `<tr ${rowClass}>
+                <td><strong>${num} ${isWin ? '🏆' : ''}</strong></td>
+                <td style="font-size:12px; color:#555;">${buyerDetails.join(', ')}</td>
+                <td><b>${bets[num].amount.toLocaleString()}</b> ကျပ်</td>
+            </tr>`;
+
+            totalSum += bets[num].amount;
+            numCount++;
         }
 
-        if (winNum.length === 1) winNum = '0' + winNum;
+        let custCount = 0;
+        for (let name in customers) {
+            custTable.innerHTML += `<tr>
+                <td><b>${name}</b></td>
+                <td>${customers[name].count} ကွက်</td>
+                <td><b style="color:${mode==='2D'?'#27ae60':'#8e44ad'};">${customers[name].totalAmount.toLocaleString()}</b> ကျပ်</td>
+            </tr>`;
+            custCount++;
+        }
 
-        renderTable(winNum);
+        if (numCount === 0) listTable.innerHTML = `<tr><td colspan="3" style="color:#aaa;">${mode} စာရင်းမရှိသေးပါ</td></tr>`;
+        if (custCount === 0) custTable.innerHTML = `<tr><td colspan="3" style="color:#aaa;">${mode} ထိုးသူ မရှိသေးပါ</td></tr>`;
+
+        if (mode === '2D') {
+            grandTotal2D = totalSum;
+            document.getElementById('total2D').innerText = totalSum.toLocaleString() + ' ကျပ်';
+        } else {
+            grandTotal3D = totalSum;
+            document.getElementById('total3D').innerText = totalSum.toLocaleString() + ' ကျပ်';
+        }
+    }
+
+    function checkWinner(mode) {
+        let winNumInput = document.getElementById('winNum' + mode);
+        let winNum = winNumInput.value.trim();
+        let resultDiv = document.getElementById('winResult' + mode);
+
+        if (!winNum) { alert('ပေါက်ဂဏန်း ရိုက်ထည့်ပါ!'); return; }
+        if (mode === '2D' && winNum.length === 1) winNum = '0' + winNum;
+
+        let multiplier = (mode === '2D') ? RATE_2D : RATE_3D;
+        let bets = (mode === '2D') ? bets2D : bets3D;
+        let grandTotal = (mode === '2D') ? grandTotal2D : grandTotal3D;
+
+        renderTables(mode, winNum);
 
         if (bets[winNum]) {
             let data = bets[winNum];
-            let detailCount = {};
-            data.details.forEach(amt => {
-                detailCount[amt] = (detailCount[amt] || 0) + 1;
-            });
+            let winAmountTotal = data.amount; 
+            let totalPayout = winAmountTotal * multiplier;
+            let netProfit = grandTotal - totalPayout; 
 
-            let detailTextArr = [];
-            for (let amt in detailCount) {
-                detailTextArr.push(`<b>${detailCount[amt]}</b> ဦးက <b>${parseInt(amt).toLocaleString()}</b> ကျပ်`);
+            let winnersText = [];
+            for (let name in data.buyers) {
+                let betAmount = data.buyers[name];
+                let winAmount = betAmount * multiplier;
+                winnersText.push(`• <b>${name}</b>: ထိုးကြေး <b>${betAmount.toLocaleString()}</b> ကျပ် ➡️ ပေါက်ကြေး <b style="color:#d35400;">${winAmount.toLocaleString()}</b> ကျပ်`);
             }
+
+            let profitStatus = (netProfit >= 0) 
+                ? `<span class="profit-text">💰 ဒိုင် အမြတ်: +${netProfit.toLocaleString()} ကျပ်</span>`
+                : `<span class="loss-text">⚠️ ဒိုင် အရှုံး: ${netProfit.toLocaleString()} ကျပ်</span>`;
 
             resultDiv.style.display = 'block';
             resultDiv.innerHTML = `
-                <h4 style="margin:0 0 5px 0; color:#d35400;">🎉 ပေါက်ဂဏန်း [ ${winNum} ] တွေ့ရှိပါသည်!</h4>
-                <div>• စုစုပေါင်း ပေါက်ကြေး: <b>${data.amount.toLocaleString()} ကျပ်</b></div>
-                <div>• စုစုပေါင်း ပေါက်သူ: <b>${data.count} ဦး</b></div>
-                <div style="margin-top: 5px; color: #555; font-size: 13px;">
-                    📌 <u>အသေးစိတ်:</u> ${detailTextArr.join(' ၊ ')}
-                </div>
+                <h4 style="margin:0 0 5px 0; color:#d35400;">🎉 ${mode} ပေါက်ဂဏန်း [ ${winNum} ]</h4>
+                <hr style="border:0.5px solid #eee;">
+                <div>📥 ထိုးသား အားလုံး၏ စုစုပေါင်း ရငွေ: <b>${grandTotal.toLocaleString()} ကျပ်</b></div>
+                <div>💸 ဒိုင် စုစုပေါင်း လျော်ကြေး: <b>${totalPayout.toLocaleString()} ကျပ်</b></div>
+                <div style="margin-top: 5px;">📊 ${profitStatus}</div>
+                <hr style="border:0.5px solid #eee;">
+                <div style="margin-top: 5px; color:#333;"><u>ပေါက်သူများ အသေးစိတ်:</u><br>${winnersText.join('<br>')}</div>
             `;
         } else {
             resultDiv.style.display = 'block';
-            resultDiv.innerHTML = `<h4 style="margin:0; color: #e74c3c;">❌ ဂဏန်း [ ${winNum} ] ကို မည်သူမျှ ထိုးထားခြင်း မရှိပါ!</h4>`;
+            resultDiv.innerHTML = `
+                <h4 style="margin:0 0 5px 0; color:#27ae60;">🎉 ${mode} ပေါက်ဂဏန်း [ ${winNum} ] ကို မည်သူမျှ မပေါက်ပါ!</h4>
+                <div>📥 ထိုးသား အားလုံး၏ စုစုပေါင်း ရငွေ: <b>${grandTotal.toLocaleString()} ကျပ်</b></div>
+                <div class="profit-text" style="margin-top:5px;">💰 ဒိုင် အပြည့်အဝ အမြတ်: +${grandTotal.toLocaleString()} ကျပ်</div>
+            `;
         }
     }
 
-    function renderTable(highlightNum = '') {
-        const tableBody = document.getElementById('listTable');
-        const grandTotalSpan = document.getElementById('grandTotal');
-        tableBody.innerHTML = '';
-
-        let totalSum = 0;
-
-        for (let num in bets) {
-            totalSum += bets[num].amount;
-            let isWin = (num === highlightNum);
-            let rowClass = isWin ? 'class="highlight-win"' : '';
-
-            let row = `<tr ${rowClass}>
-                <td><strong>${num} ${isWin ? '🏆' : ''}</strong></td>
-                <td>${bets[num].count} ယောက်</td>
-                <td>${bets[num].amount.toLocaleString()} ကျပ်</td>
-            </tr>`;
-            tableBody.innerHTML += row;
-        }
-
-        grandTotalSpan.innerText = totalSum.toLocaleString() + ' ကျပ်';
-    }
-
-    function resetData() {
-        if (confirm('စာရင်းအားလုံးကို ဖျက်ရန် သေချာပါသလား။')) {
-            bets = {};
-            document.getElementById('pasteArea').value = '';
-            document.getElementById('winningNumber').value = '';
-            document.getElementById('winResult').style.display = 'none';
-            renderTable();
+    function resetData(mode) {
+        if (confirm(`${mode} စာရင်းများကို ဖျက်ရန် သေချာပါသလား။`)) {
+            if (mode === '2D') {
+                bets2D = {}; customers2D = {}; grandTotal2D = 0;
+                document.getElementById('customerName2D').value = '';
+                document.getElementById('pasteArea2D').value = '';
+                document.getElementById('winNum2D').value = '';
+                document.getElementById('winResult2D').style.display = 'none';
+            } else {
+                bets3D = {}; customers3D = {}; grandTotal3D = 0;
+                document.getElementById('customerName3D').value = '';
+                document.getElementById('pasteArea3D').value = '';
+                document.getElementById('winNum3D').value = '';
+                document.getElementById('winResult3D').style.display = 'none';
+            }
+            saveData();
+            renderTables(mode);
         }
     }
+
+    // Page စဖွင့်လိုက်သည်နှင့် အရင်ရှိပြီးသား စာရင်းများကို အလိုအလျောက် ပြသပေးမည်
+    window.onload = function() {
+        renderTables('2D');
+        renderTables('3D');
+    };
 </script>
 
 </body>
