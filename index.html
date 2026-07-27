@@ -3,12 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D / 3D Calculator with Selected TXT Download</title>
+    <title>2D / 3D Calculator with License</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f4f6f9; margin: 0; padding: 15px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 550px; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #2c3e50; margin: 5px 0 15px 0; }
+
+        /* License Modal / Box */
+        #licenseOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .license-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .device-display-box { background: #f8f9fa; border: 1px dashed #cbd5e1; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: #334155; word-break: break-all; }
+        .license-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; text-align: center; outline: none; }
+        .license-box button { width: 100%; padding: 12px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .license-msg { font-size: 13px; color: #e74c3c; margin-top: 10px; }
+
+        /* License Info Bar inside App */
+        .license-info-bar { background: #e8f4f8; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: #2c3e50; display: flex; justify-content: space-between; align-items: center; }
 
         /* Main Mode Tabs */
         .main-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
@@ -29,13 +40,11 @@
         .input-group { margin-bottom: 10px; }
         .input-group label { display: block; font-size: 13px; font-weight: bold; color: #34495e; margin-bottom: 5px; }
         .input-group input, .input-group select { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; }
-        .input-group input:focus, .input-group select:focus { border-color: #3498db; }
-
+        
         textarea { width: 100%; height: 110px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; resize: vertical; }
 
         .btn-group { display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px; }
         button.action-btn { flex: 1; padding: 12px; background-color: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
-        button.action-btn:hover { opacity: 0.9; }
         .reset-btn { background-color: #e74c3c !important; }
 
         /* Session Selector */
@@ -47,7 +56,7 @@
         .title-3d { border-left-color: #8e44ad !important; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
         th, td { padding: 8px; text-align: center; border-bottom: 1px solid #eee; font-size: 13px; }
-        th { background-color: #34495e; color: white; }
+        th { background-color: #3498db; color: white; }
         .th-3d { background-color: #8e44ad !important; }
         .th-user { background-color: #27ae60 !important; }
         tr:nth-child(even) { background-color: #f9f9f9; }
@@ -60,29 +69,42 @@
         .profit-text { color: #27ae60; font-weight: bold; font-size: 15px; }
         .loss-text { color: #e74c3c; font-weight: bold; font-size: 15px; }
 
-        /* History Panel Control Bar */
         .history-controls { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-        .history-controls label { font-size: 13px; font-weight: bold; color: #34495e; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        
         .download-btn { background: #0284c7; color: white; border: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; width: 100%; justify-content: center; margin-bottom: 12px; }
-        .download-btn:hover { background: #0369a1; }
-
         .delete-selected-btn { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; }
-        .delete-selected-btn:hover { background: #c0392b; }
-
-        /* History Cards */
-        .history-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; }
+        .history-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; font-weight: bold; }
-        .card-checkbox { transform: scale(1.2); cursor: pointer; margin-right: 8px; }
         .single-delete-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 15px; padding: 0 5px; }
-        .single-delete-btn:hover { color: #c0392b; }
     </style>
 </head>
 <body>
 
-<div class="container">
+    <!-- License Verification Overlay -->
+    <div id="licenseOverlay">
+        <div class="license-box">
+            <h3>🔒 License Key ထည့်ရန်</h3>
+            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">စက်တစ်စက်ချင်းစီအတွက် လိုင်စင် Key ထည့်သွင်းပေးပါ။</p>
+            
+            <div class="device-display-box">
+                <b>သင့် Device ID:</b><br>
+                <span id="uiDeviceId" style="color: #2563eb; font-weight: bold;">Loading...</span>
+            </div>
+
+            <input type="text" id="licenseKeyInput" placeholder="Enter your key here...">
+            <button onclick="verifyKey()">စစ်ဆေးမည်</button>
+            <div id="licenseMsg" class="license-msg"></div>
+        </div>
+    </div>
+
+<div class="container" id="mainContent" style="display:none;">
     <h2>2D / 3D Calculator</h2>
     
+    <!-- License Status Info Bar -->
+    <div class="license-info-bar">
+        <div>🔑 Plan: <b id="uiPlanType" style="color:#2563eb;">-</b></div>
+        <div>⏳ ကုန်ဆုံးရက်: <b id="uiExpiryDate" style="color:#d35400;">-</b></div>
+    </div>
+
     <!-- Main Tabs -->
     <div class="main-tabs">
         <button id="btnMode2D" class="main-tab-btn active-2d" onclick="switchMainMode('2D')">📊 2D</button>
@@ -197,7 +219,6 @@
             <input type="date" id="filterDate" onchange="renderHistory()">
         </div>
 
-        <!-- History Bulk Controls -->
         <div id="historyControls" class="history-controls" style="display: none;">
             <label>
                 <input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this)">
@@ -206,18 +227,75 @@
             <button class="delete-selected-btn" onclick="deleteSelectedHistory()">🗑️ ရွေးထားသည်များ ဖျက်မည်</button>
         </div>
 
-        <!-- Download Selected Text File Button -->
         <button id="downloadTxtBtn" class="download-btn" onclick="downloadSelectedTxtReport()" style="display: none;">
             📥 ရွေးထားသည်များကို (.txt) Download ဆွဲမည်
         </button>
 
-        <div id="historyList">
-            <!-- ရက်စွဲအလိုက် မှတ်တမ်းများ ဒီမှာပေါ်မည် -->
-        </div>
+        <div id="historyList"></div>
     </div>
 </div>
 
 <script>
+    // Google Apps Script က ထွက်လာတဲ့ Web App URL ကို ဒီနေရာမှာ ထည့်ပါ
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwORxLbl2bDg9gi85atW9L-iLBLE4zcU3NvhTXdYn6JCHQMw553KHRmMrjahXdGoq-Xjg/exec";
+
+    function getDeviceID() {
+        let devId = localStorage.getItem('device_unique_id');
+        if (!devId) {
+            devId = 'DEV-' + Math.random().toString(36).substr(2, 9).toUpperCase() + '-' + Date.now();
+            localStorage.setItem('device_unique_id', devId);
+        }
+        return devId;
+    }
+
+    const currentDeviceId = getDeviceID();
+    document.getElementById('uiDeviceId').innerText = currentDeviceId;
+
+    window.onload = function() {
+        let savedKey = localStorage.getItem('active_license_key');
+        if (savedKey) {
+            document.getElementById('licenseKeyInput').value = savedKey;
+            verifyKey(true);
+        }
+    };
+
+    function verifyKey(isAuto = false) {
+        let key = document.getElementById('licenseKeyInput').value.trim();
+        let msgBox = document.getElementById('licenseMsg');
+
+        if (!key) {
+            msgBox.innerText = "ကျေးဇူးပြု၍ Key ထည့်ပါ။";
+            return;
+        }
+
+        msgBox.innerText = "စစ်ဆေးနေပါသည်...";
+
+        let fullURL = `${SCRIPT_URL}?action=verify&key=${encodeURIComponent(key)}&deviceId=${encodeURIComponent(currentDeviceId)}`;
+
+        fetch(fullURL)
+            .then(response => response.json())
+            .then(res => {
+                if (res.status === "success") {
+                    localStorage.setItem('active_license_key', key);
+                    document.getElementById('licenseOverlay').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                    
+                    document.getElementById('uiPlanType').innerText = res.durationType || "Standard";
+                    document.getElementById('uiExpiryDate').innerText = res.expiryDate;
+
+                    renderTables('2D');
+                    renderTables('3D');
+                } else {
+                    msgBox.innerText = res.message;
+                    if(!isAuto) localStorage.removeItem('active_license_key');
+                }
+            })
+            .catch(err => {
+                msgBox.innerText = "ချိတ်ဆက်မှု အမှားအယွင်း ရှိနေပါသည်။";
+                console.error(err);
+            });
+    }
+
     const RATE_2D = 80;  
     const RATE_3D = 500; 
 
@@ -435,7 +513,10 @@
                     if (numbers) {
                         let hasInvalidDigits = numbers.some(n => n.length > 2);
                         if (hasInvalidDigits) { invalidLines.push(line); return; }
-                        numbers.forEach(num => addBet('2D', num, amount, cName));
+                        numbers.forEach(num => {
+                            let permutedList = getPermutations(num);
+                            permutedList.forEach(pNum => addBet('2D', pNum, amount, cName));
+                        });
                     }
                     return;
                 }
@@ -483,7 +564,10 @@
                     if (numbers) {
                         let hasInvalidDigits = numbers.some(n => n.length !== 3);
                         if (hasInvalidDigits) { invalidLines.push(line); return; }
-                        numbers.forEach(num => addBet('3D', num, amount, cName));
+                        numbers.forEach(num => {
+                            let permutedList = getPermutations(num);
+                            permutedList.forEach(pNum => addBet('3D', pNum, amount, cName));
+                        });
                     }
                     return;
                 }
@@ -627,7 +711,6 @@
         `;
     }
 
-    // History Panel
     function renderHistory() {
         const filterDate = document.getElementById('filterDate').value;
         const historyList = document.getElementById('historyList');
@@ -665,7 +748,7 @@
                 <div class="history-card" id="card-${item.id}">
                     <div class="history-header">
                         <div style="display:flex; align-items:center;">
-                            <input type="checkbox" class="card-checkbox history-item-checkbox" value="${item.id}">
+                            <input type="checkbox" class="card-checkbox history-item-checkbox" value="${item.id}" style="transform: scale(1.2); cursor: pointer; margin-right: 8px;">
                             <span>📅 ${item.date} (<b style="color:${item.mode==='2D'?'#3498db':'#8e44ad'};">${item.mode}${sessionDisplay}</b>)</span>
                         </div>
                         <div>
@@ -684,7 +767,6 @@
         });
     }
 
-    // 🔥 Download Selected History Items Only (ရွေးထားသည့် မှတ်တမ်းများကိုသာ TXT ဆွဲမည်)
     function downloadSelectedTxtReport() {
         const filterDate = document.getElementById('filterDate').value;
         let selectedCheckboxes = document.querySelectorAll('.history-item-checkbox:checked');
@@ -718,8 +800,9 @@
             let targetBets = (item.mode === '2D') ? item.bets2D : item.bets3D;
 
             if (targetBets) {
-                for (let num in targetBets) {
-                    let buyers = targetBets[num].buyers;
+                let targetBetsObj = targetBets;
+                for (let num in targetBetsObj) {
+                    let buyers = targetBetsObj[num].buyers;
                     for (let cName in buyers) {
                         if (!customerBetsDetail[cName]) customerBetsDetail[cName] = [];
                         customerBetsDetail[cName].push({ num: num, amount: buyers[cName] });
@@ -752,7 +835,6 @@
             txtContent += `\n=========================================\n\n`;
         });
 
-        // UTF-8 BOM ('\uFEFF') ထည့်သွင်းထားသဖြင့် Font မပျက်ပါ
         const blob = new Blob(['\uFEFF' + txtContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -809,12 +891,6 @@
             renderTables(mode);
         }
     }
-
-    window.onload = function() {
-        renderTables('2D');
-        renderTables('3D');
-    };
 </script>
-
 </body>
 </html>
