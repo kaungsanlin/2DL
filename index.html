@@ -242,6 +242,7 @@
     function getDeviceID() {
         let devId = localStorage.getItem('device_unique_id');
         if (!devId) {
+            // Browser တစ်ခုအတွက် တစ်ခါဆောက်ပြီးရင် ထပ်မပြောင်းလဲတော့အောင် Fixed ID တစ်ခု ဖန်တီးပေးခြင်း
             devId = 'DEV-' + Math.random().toString(36).substr(2, 9).toUpperCase() + '-' + Date.now();
             localStorage.setItem('device_unique_id', devId);
         }
@@ -276,6 +277,18 @@
             .then(response => response.json())
             .then(res => {
                 if (res.status === "success") {
+                    // Expiry Date စစ်ဆေးခြင်း (အချိန်ပြည့်သွားပါက အလိုအလျောက် ထွက်စေရန်)
+                    if (res.expiryDate) {
+                        let today = new Date().toISOString().split('T')[0];
+                        if (res.expiryDate < today) {
+                            localStorage.removeItem('active_license_key');
+                            document.getElementById('licenseOverlay').style.display = 'flex';
+                            document.getElementById('mainContent').style.display = 'none';
+                            msgBox.innerText = "⚠️ သင့်လိုင်စင် သက်တမ်း ကုန်ဆုံးသွားပါပြီ။";
+                            return;
+                        }
+                    }
+
                     localStorage.setItem('active_license_key', key);
                     document.getElementById('licenseOverlay').style.display = 'none';
                     document.getElementById('mainContent').style.display = 'block';
