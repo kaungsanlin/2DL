@@ -3,23 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D / 3D Calculator with License</title>
+    <title>2D / 3D Calculator with Auto AI</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { font-family: sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        #activationModal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+        }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 12px;
+            width: 90%; max-width: 420px; text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-content input {
+            width: 100%; padding: 12px; margin: 10px 0;
+            border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; text-align: center;
+        }
+        .modal-content button {
+            width: 100%; padding: 12px; background: #28a745; color: white;
+            border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 5px;
+        }
+        .modal-content button:hover { background: #218838; }
+        .trial-btn { background: #ffc107 !important; color: #333 !important; }
+        .trial-btn:hover { background: #e0a800 !important; }
+        .tg-btn { background: #0088cc !important; text-decoration: none; display: block; text-align: center; padding: 12px; border-radius: 6px; color: white; font-weight: bold; margin-top: 10px; }
+        .tg-btn:hover { background: #0077b5 !important; }
+        #activMsg { margin-top: 10px; font-size: 14px; font-weight: bold; }
+        
+        /* Pricing Plans Box */
+        .pricing-box {
+            margin-top: 15px; padding: 12px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; text-align: left; display: none;
+        }
+        .pricing-box h4 { margin: 0 0 8px 0; text-align: center; color: #333; }
+        .plan-item { font-size: 14px; padding: 4px 0; border-bottom: 1px dashed #ccc; display: flex; justify-content: space-between; }
+		 * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f4f6f9; margin: 0; padding: 15px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 550px; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #2c3e50; margin: 5px 0 15px 0; }
-
-        /* License Modal / Box */
-        #licenseOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .license-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
-        .device-display-box { background: #f8f9fa; border: 1px dashed #cbd5e1; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: #334155; word-break: break-all; }
-        .license-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; text-align: center; outline: none; }
-        .license-box button { width: 100%; padding: 12px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .license-msg { font-size: 13px; color: #e74c3c; margin-top: 10px; }
-
-        /* License Info Bar inside App */
-        .license-info-bar { background: #e8f4f8; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: #2c3e50; display: flex; justify-content: space-between; align-items: center; }
 
         /* Main Mode Tabs */
         .main-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
@@ -40,27 +66,37 @@
         .input-group { margin-bottom: 10px; }
         .input-group label { display: block; font-size: 13px; font-weight: bold; color: #34495e; margin-bottom: 5px; }
         .input-group input, .input-group select { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; }
-        
+        .input-group input:focus, .input-group select:focus { border-color: #3498db; }
+
         textarea { width: 100%; height: 110px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; resize: vertical; }
 
         .btn-group { display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px; }
         button.action-btn { flex: 1; padding: 12px; background-color: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        button.action-btn:hover { opacity: 0.9; }
+        button:disabled, textarea:disabled, input:disabled { background-color: #e9ecef !important; cursor: not-allowed; opacity: 0.6; }
         .reset-btn { background-color: #e74c3c !important; }
 
         /* Session Selector */
         .session-selector { display: flex; justify-content: center; gap: 20px; margin-bottom: 12px; background: #fff; padding: 8px; border-radius: 8px; border: 1px solid #e0e0e0; }
         .session-selector label { font-size: 14px; font-weight: bold; color: #34495e; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
+        /* Lock Alert Banner */
+        .lock-banner { display: none; background: #ffe3e3; color: #d32f2f; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 10px; border: 1px solid #f5c6cb; }
+
         /* Tables & Results */
         .section-title { font-weight: bold; color: #34495e; margin-top: 15px; margin-bottom: 8px; padding-left: 5px; border-left: 4px solid #3498db; }
         .title-3d { border-left-color: #8e44ad !important; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
         th, td { padding: 8px; text-align: center; border-bottom: 1px solid #eee; font-size: 13px; }
-        th { background-color: #3498db; color: white; }
+        th { background-color: #34495e; color: white; }
         .th-3d { background-color: #8e44ad !important; }
         .th-user { background-color: #27ae60 !important; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         .highlight-win { background-color: #ffeaa7 !important; font-weight: bold; }
+
+        /* Clickable Customer Style */
+        .clickable-customer { color: #2980b9; font-weight: bold; cursor: pointer; text-decoration: underline; }
+        .clickable-customer:hover { color: #16a085; }
 
         .total-summary { margin-top: 10px; padding: 12px; background-color: #e8f4f8; border-radius: 8px; display: flex; justify-content: space-between; font-weight: bold; color: #2c3e50; font-size: 14px; }
         .win-panel-box { background-color: #fffdf5; border: 2px solid #f1c40f; border-radius: 10px; padding: 15px; }
@@ -69,43 +105,71 @@
         .profit-text { color: #27ae60; font-weight: bold; font-size: 15px; }
         .loss-text { color: #e74c3c; font-weight: bold; font-size: 15px; }
 
+        /* History Panel Control Bar */
         .history-controls { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+        .history-controls label { font-size: 13px; font-weight: bold; color: #34495e; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        
         .download-btn { background: #0284c7; color: white; border: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; width: 100%; justify-content: center; margin-bottom: 12px; }
+        .download-btn:hover { background: #0369a1; }
+
         .delete-selected-btn { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; }
-        .history-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .delete-selected-btn:hover { background: #c0392b; }
+
+        /* History Cards */
+        .history-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; }
         .history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; font-weight: bold; }
+        .card-checkbox { transform: scale(1.2); cursor: pointer; margin-right: 8px; }
         .single-delete-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 15px; padding: 0 5px; }
+        .single-delete-btn:hover { color: #c0392b; }
+
+        /* Save Button Style */
+        .save-btn { background: #27ae60; color: white; margin-bottom: 8px; transition: background 0.3s; }
+        .save-btn:hover { background: #219150; }
+
+        /* Edit Modal Styling */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background-color: #fff; width: 90%; max-width: 480px; border-radius: 12px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-height: 85vh; display: flex; flex-direction: column; }
+        .modal-header { font-size: 16px; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { overflow-y: auto; flex-1: 1; max-height: 50vh; margin-bottom: 15px; }
+        .edit-table { width: 100%; border-collapse: collapse; }
+        .edit-table input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; text-align: center; }
+        .edit-delete-btn { background: #e74c3c; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; }
+        .modal-footer { display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid #eee; padding-top: 10px; }
+        .close-modal-btn { background: #95a5a6; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
+        .save-modal-btn { background: #2980b9; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- License Verification Overlay -->
-    <div id="licenseOverlay">
-        <div class="license-box">
-            <h3>🔒 License Key ထည့်ရန်</h3>
-            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">စက်တစ်စက်ချင်းစီအတွက် လိုင်စင် Key ထည့်သွင်းပေးပါ။</p>
+    <div id="activationModal" style="display:flex;">
+        <div class="modal-content">
+            <h3>📁 Software Activation</h3>
+            <p>ဤ App ကို အသုံးပြုရန် Key ထည့်သွင်းပါ။</p>
             
-            <div class="device-display-box">
-                <b>သင့် Device ID:</b><br>
-                <span id="uiDeviceId" style="color: #2563eb; font-weight: bold;">Loading...</span>
-            </div>
+            <input type="text" id="activationKeyInput" placeholder="KEY-XXXX-XXXX-XXXX">
+            <button onclick="verifyActivationKey()">အပြည့်အစုံ (Activate)</button>
+            <button class="trial-btn" id="trialBtn" onclick="getFreeTrial()">⏱ 5 မိနစ် Free Trial ရယူရန်</button>
+            
+            <div id="activMsg"></div>
 
-            <input type="text" id="licenseKeyInput" placeholder="Enter your key here...">
-            <button onclick="verifyKey()">စစ်ဆေးမည်</button>
-            <div id="licenseMsg" class="license-msg"></div>
+            <div id="pricingSection" class="pricing-box">
+                <h4>💎 ဝယ်ယူနိုင်သော Plan များ</h4>
+                <div class="plan-item"><span>1 လ (1 Month Plan)</span> <b>10,000 MMK</b></div>
+                <div class="plan-item"><span>1 နှစ် (1 Year Plan)</span> <b>50,000 MMK</b></div>
+                <div class="plan-item"><span>တစ်သက်လုံး (Lifetime)</span> <b>100,000 MMK</b></div>
+                
+                <a href="https://t.me/YOUR_TELEGRAM_USERNAME" target="_blank" class="tg-btn">📲 Telegram ဖြင့် ဝယ်ယူရန် ဆက်သွယ်မည်</a>
+            </div>
         </div>
     </div>
 
-<div class="container" id="mainContent" style="display:none;">
-    <h2>2D / 3D Calculator</h2>
-    
-    <!-- License Status Info Bar -->
-    <div class="license-info-bar">
-        <div>🔑 Plan: <b id="uiPlanType" style="color:#2563eb;">-</b></div>
-        <div>⏳ ကုန်ဆုံးရက်: <b id="uiExpiryDate" style="color:#d35400;">-</b></div>
-    </div>
-
-    <!-- Main Tabs -->
+    <div class="container">
+       <h2>2D / 3D Calculator</h2>
+        <div id="keyStatusBanner" style="background: #e9ecef; padding: 10px; border-radius: 6px; margin-bottom: 15px; display:none;">
+            🏷 Plan: <span id="planTypeDisplay">-</span> | ⏳ ကျန်ချိန်: <span id="timeLeftDisplay">စစ်ဆေးနေသည်...</span>
+        </div>
+        
+         <!-- Main Tabs -->
     <div class="main-tabs">
         <button id="btnMode2D" class="main-tab-btn active-2d" onclick="switchMainMode('2D')">📊 2D</button>
         <button id="btnMode3D" class="main-tab-btn" onclick="switchMainMode('3D')">📊 3D</button>
@@ -120,6 +184,20 @@
         </div>
 
         <div id="subInput2D" class="panel active">
+            <!-- ရက်စွဲ ရွေးချယ်မှု -->
+            <div class="input-group">
+                <label>📅 ရက်စွဲ ရွေးပါ:</label>
+                <input type="date" id="selectedDate2D" onchange="onDateOrSessionChange('2D')">
+            </div>
+
+            <!-- Session Selector -->
+            <div class="session-selector">
+                <label><input type="radio" name="inputSession2D" value="မနက်" checked onchange="onInputSessionChange('2D')"> 🌅 မနက် (12:01)</label>
+                <label><input type="radio" name="inputSession2D" value="ညနေ" onchange="onInputSessionChange('2D')"> 🌆 ညနေ (4:30)</label>
+            </div>
+
+            <div id="lockBanner2D" class="lock-banner">🔒 ဤ Session/ရက်စွဲ အတွက် စာရင်းစစ်ပြီး သို့မဟုတ် ယခင်ရက်ဖြစ်၍ စာရင်းထပ်ထည့်၍ မရပါ</div>
+
             <div class="input-group">
                 <label>👤 ထိုးသူအမည်:</label>
                 <input type="text" id="customerName2D" placeholder="ဥပမာ- ကိုကို ၊ မမ">
@@ -129,30 +207,37 @@
                 <textarea id="pasteArea2D" placeholder="25 500&#10;25B 500 / 25R 500&#10;1ထိပ် 500 / 2ပိတ် 300&#10;123ခွေ 100&#10;0ဘရိတ် 500"></textarea>
             </div>
             <div class="btn-group">
-                <button class="action-btn" onclick="processData('2D')">2D စာရင်းသိမ်းမည်</button>
-                <button class="action-btn reset-btn" onclick="resetData('2D')">ဖျက်မည်</button>
+                <button id="btnSave2D" class="action-btn" onclick="processData('2D')">2D စာရင်းသိမ်းမည်</button>
+                <button id="btnReset2D" class="action-btn reset-btn" onclick="resetData('2D')">Reset / ဖျက်မည်</button>
             </div>
         </div>
 
         <div id="subWin2D" class="panel">
             <div class="win-panel-box">
+                <div class="input-group">
+                    <label>📅 စစ်ဆေးလိုသည့် ရက်စွဲ:</label>
+                    <input type="date" id="checkDate2D" onchange="syncDateFromWin('2D')">
+                </div>
                 <div class="session-selector">
-                    <label><input type="radio" name="session2D" value="မနက်" checked> 🌅 မနက် (12:01)</label>
-                    <label><input type="radio" name="session2D" value="ညနေ"> 🌆 ညနေ (4:30)</label>
+                    <label><input type="radio" name="session2D" value="မနက်" checked onchange="onDateOrSessionChange('2D')"> 🌅 မနက် (12:01)</label>
+                    <label><input type="radio" name="session2D" value="ညနေ" onchange="onDateOrSessionChange('2D')"> 🌆 ညနေ (4:30)</label>
                 </div>
                 <input type="text" id="winNum2D" maxlength="2" inputmode="numeric" oninput="validateNumberInput(this, 2)" placeholder="2D ပေါက်ဂဏန်း (ဥပမာ- 25)" style="width: 100%; padding: 10px; margin-bottom: 10px; text-align: center; font-size: 18px;">
-                <button class="action-btn" style="width: 100%; background: #f39c12;" onclick="checkWinner('2D')">2D ပေါက်ဂဏန်း စစ်မည်</button>
+                
+                <button class="action-btn save-btn" style="width: 100%;" onclick="saveAndPromptDownload('2D')">💾 SAVE ပြုလုပ်မည် (သိမ်းမည်/ဒေါင်းလုဒ်ဆွဲမည်)</button>
+                <button class="action-btn" style="width: 100%; background: #f39c12;" onclick="checkWinner('2D')">2D ပေါက်ဂဏန်း ကိုယ်တိုင် စစ်မည်</button>
+                
                 <div id="winResult2D" class="win-result"></div>
             </div>
         </div>
 
-        <div class="section-title">📊 2D (၂ လုံး) စာရင်းချုပ်</div>
+        <div class="section-title">📊 2D (<span id="sessionTitle2D">မနက်</span>) စာရင်းချုပ်</div>
         <table>
             <thead><tr><th>ဂဏန်း</th><th>ထိုးထားသူများ</th><th>စုစုပေါင်း</th></tr></thead>
             <tbody id="listTable2D"><tr><td colspan="3" style="color:#aaa;">စာရင်းမရှိသေးပါ</td></tr></tbody>
         </table>
 
-        <div class="section-title">👤 2D ထိုးသူတစ်ဦးချင်းစီ စာရင်း</div>
+        <div class="section-title">👤 2D ထိုးသူတစ်ဦးချင်းစီ စာရင်း (နှိပ်၍ ပြင်နိုင်သည်)</div>
         <table>
             <thead><tr><th class="th-user">အမည်</th><th class="th-user">ကွက်ရေ</th><th class="th-user">ကျသင့်ငွေ</th></tr></thead>
             <tbody id="customerTable2D"><tr><td colspan="3" style="color:#aaa;">စာရင်းမရှိသေးပါ</td></tr></tbody>
@@ -173,6 +258,13 @@
 
         <div id="subInput3D" class="panel active">
             <div class="input-group">
+                <label>📅 ရက်စွဲ ရွေးပါ:</label>
+                <input type="date" id="selectedDate3D" onchange="onDateOrSessionChange('3D')">
+            </div>
+
+            <div id="lockBanner3D" class="lock-banner">🔒 ဤရက်စွဲအတွက် စာရင်းစစ်ပြီး သို့မဟုတ် ယခင်ရက်ဖြစ်၍ စာရင်းထပ်ထည့်၍ မရပါ</div>
+
+            <div class="input-group">
                 <label>👤 ထိုးသူအမည်:</label>
                 <input type="text" id="customerName3D" placeholder="ဥပမာ- ကိုကို ၊ မမ">
             </div>
@@ -181,15 +273,22 @@
                 <textarea id="pasteArea3D" placeholder="321 500&#10;321B100 / 321R100&#10;12ထိပ် 500"></textarea>
             </div>
             <div class="btn-group">
-                <button class="action-btn" style="background-color: #8e44ad;" onclick="processData('3D')">3D စာရင်းသိမ်းမည်</button>
-                <button class="action-btn reset-btn" onclick="resetData('3D')">ဖျက်မည်</button>
+                <button id="btnSave3D" class="action-btn" style="background-color: #8e44ad;" onclick="processData('3D')">3D စာရင်းသိမ်းမည်</button>
+                <button id="btnReset3D" class="action-btn reset-btn" onclick="resetData('3D')">Reset / ဖျက်မည်</button>
             </div>
         </div>
 
         <div id="subWin3D" class="panel">
             <div class="win-panel-box" style="border-color: #8e44ad;">
+                <div class="input-group">
+                    <label>📅 စစ်ဆေးလိုသည့် ရက်စွဲ:</label>
+                    <input type="date" id="checkDate3D" onchange="syncDateFromWin('3D')">
+                </div>
                 <input type="text" id="winNum3D" maxlength="3" inputmode="numeric" oninput="validateNumberInput(this, 3)" placeholder="3D ပေါက်ဂဏန်း (ဥပမာ- 321)" style="width: 100%; padding: 10px; margin-bottom: 10px; text-align: center; font-size: 18px;">
-                <button class="action-btn" style="width: 100%; background: #8e44ad;" onclick="checkWinner('3D')">3D ပေါက်ဂဏန်း စစ်မည်</button>
+                
+                <button class="action-btn save-btn" style="width: 100%; background: #27ae60;" onclick="saveAndPromptDownload('3D')">💾 SAVE ပြုလုပ်မည် (သိမ်းမည်/ဒေါင်းလုဒ်ဆွဲမည်)</button>
+                <button class="action-btn" style="width: 100%; background: #d35400;" onclick="checkWinner('3D')">3D ပေါက်ဂဏန်း ကိုယ်တိုင် စစ်မည်</button>
+                
                 <div id="winResult3D" class="win-result"></div>
             </div>
         </div>
@@ -200,7 +299,7 @@
             <tbody id="listTable3D"><tr><td colspan="3" style="color:#aaa;">စာရင်းမရှိသေးပါ</td></tr></tbody>
         </table>
 
-        <div class="section-title title-3d">👤 3D ထိုးသူတစ်ဦးချင်းစီ စာရင်း</div>
+        <div class="section-title title-3d">👤 3D ထိုးသူတစ်ဦးချင်းစီ စာရင်း (နှိပ်၍ ပြင်နိုင်သည်)</div>
         <table>
             <thead><tr><th class="th-3d">အမည်</th><th class="th-3d">ကွက်ရေ</th><th class="th-3d">ကျသင့်ငွေ</th></tr></thead>
             <tbody id="customerTable3D"><tr><td colspan="3" style="color:#aaa;">စာရင်းမရှိသေးပါ</td></tr></tbody>
@@ -235,95 +334,275 @@
     </div>
 </div>
 
-<script>
-    // Google Apps Script က ထွက်လာတဲ့ Web App URL ကို ဒီနေရာမှာ ထည့်ပါ
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwORxLbl2bDg9gi85atW9L-iLBLE4zcU3NvhTXdYn6JCHQMw553KHRmMrjahXdGoq-Xjg/exec";
+<!-- ================= EDIT CUSTOMER MODAL ================= -->
+<div id="editCustomerModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span id="modalTitle">✏️ စာရင်းပြင်ဆင်ရန်</span>
+            <span style="cursor:pointer;" onclick="closeEditModal()">✖</span>
+        </div>
+        <div class="modal-body">
+            <table class="edit-table">
+                <thead>
+                    <tr>
+                        <th>ဂဏန်း</th>
+                        <th>ပမာဏ</th>
+                        <th>ဖျက်ရန်</th>
+                    </tr>
+                </thead>
+                <tbody id="editModalTableBody"></tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="close-modal-btn" onclick="closeEditModal()">မပြင်ပါ</button>
+            <button class="save-modal-btn" onclick="saveCustomerEdits()">💾 ပြင်ဆင်ချက် သိမ်းမည်</button>
+        </div>
+    </div>
+</div>
 
-    function getDeviceID() {
-        let devId = localStorage.getItem('device_unique_id');
-        if (!devId) {
-            // Browser တစ်ခုအတွက် တစ်ခါဆောက်ပြီးရင် ထပ်မပြောင်းလဲတော့အောင် Fixed ID တစ်ခု ဖန်တီးပေးခြင်း
-            devId = 'DEV-' + Math.random().toString(36).substr(2, 9).toUpperCase() + '-' + Date.now();
-            localStorage.setItem('device_unique_id', devId);
-        }
-        return devId;
-    }
+    </div>
 
-    const currentDeviceId = getDeviceID();
-    document.getElementById('uiDeviceId').innerText = currentDeviceId;
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwS54x6xzMukpDJ8M_KiT7eJHgKX-FctxJt5z39x9_-wYADieIWW97hQ8ClGBPHQFfElw/exec"; // သင်၏ Apps Script Web App URL ထည့်ရန်
 
-    window.onload = function() {
-        let savedKey = localStorage.getItem('active_license_key');
-        if (savedKey) {
-            document.getElementById('licenseKeyInput').value = savedKey;
-            verifyKey(true);
-        }
-    };
+        function getDeviceID() {
+         // 1. ပထမဆုံး localStorage မှာ ရှိမရှိ စစ်မည်
+         let deviceId = localStorage.getItem('app_device_id');
+    
+         // 2. မရှိသေးဘူးဆိုမှသာ တစ်ကြိမ်တည်း အသစ်ဖန်တီးမည် (Refresh လုပ်လည်း လုံးဝ မပြောင်းတော့ပါ)
+         if (!deviceId || deviceId === "" || deviceId === "undefined") {
+         deviceId = 'DEV-' + Math.random().toString(36).substr(2, 9).toUpperCase() + '-' + Date.now();
+         localStorage.setItem('app_device_id', deviceId);
+         }
+    
+         return deviceId;
+         }
 
-    function verifyKey(isAuto = false) {
-        let key = document.getElementById('licenseKeyInput').value.trim();
-        let msgBox = document.getElementById('licenseMsg');
+        window.addEventListener('DOMContentLoaded', () => {
+            let expiresAt = localStorage.getItem('app_expires_at');
+            let usedKey = localStorage.getItem('app_used_key');
 
-        if (!key) {
-            msgBox.innerText = "ကျေးဇူးပြု၍ Key ထည့်ပါ။";
-            return;
-        }
+            if (usedKey) {
+                document.getElementById('activationKeyInput').value = usedKey;
+            }
 
-        msgBox.innerText = "စစ်ဆေးနေပါသည်...";
-
-        let fullURL = `${SCRIPT_URL}?action=verify&key=${encodeURIComponent(key)}&deviceId=${encodeURIComponent(currentDeviceId)}`;
-
-        fetch(fullURL)
-            .then(response => response.json())
-            .then(res => {
-                if (res.status === "success") {
-                    // Expiry Date စစ်ဆေးခြင်း (အချိန်ပြည့်သွားပါက အလိုအလျောက် ထွက်စေရန်)
-                    if (res.expiryDate) {
-                        let today = new Date().toISOString().split('T')[0];
-                        if (res.expiryDate < today) {
-                            localStorage.removeItem('active_license_key');
-                            document.getElementById('licenseOverlay').style.display = 'flex';
-                            document.getElementById('mainContent').style.display = 'none';
-                            msgBox.innerText = "⚠️ သင့်လိုင်စင် သက်တမ်း ကုန်ဆုံးသွားပါပြီ။";
-                            return;
-                        }
-                    }
-
-                    localStorage.setItem('active_license_key', key);
-                    document.getElementById('licenseOverlay').style.display = 'none';
-                    document.getElementById('mainContent').style.display = 'block';
-                    
-                    document.getElementById('uiPlanType').innerText = res.durationType || "Standard";
-                    document.getElementById('uiExpiryDate').innerText = res.expiryDate;
-
-                    renderTables('2D');
-                    renderTables('3D');
-                } else {
-                    msgBox.innerText = res.message;
-                    if(!isAuto) localStorage.removeItem('active_license_key');
+            // သက်တမ်း ကုန်ဆုံးသွားခြင်း ရှိမရှိ စစ်ဆေးခြင်း
+            if (expiresAt && expiresAt !== 'LIFETIME') {
+                let currentTime = new Date().getTime();
+                if (currentTime >= parseInt(expiresAt)) {
+                    forceLogoutAndShowModal("သင့် Key (သို့) Trial သက်တမ်း ကုန်ဆုံးသွားပါပြီ။");
+                    return;
                 }
-            })
-            .catch(err => {
-                msgBox.innerText = "ချိတ်ဆက်မှု အမှားအယွင်း ရှိနေပါသည်။";
-                console.error(err);
-            });
+            } else if (!expiresAt) {
+                showActivationModal();
+            }
+        });
+
+        function showActivationModal() {
+            let modal = document.getElementById('activationModal');
+            if(modal) modal.style.display = 'flex';
+        }
+
+        function forceLogoutAndShowModal(reason) {
+    let savedKey = localStorage.getItem('app_used_key');
+    let savedDeviceID = localStorage.getItem('app_device_id'); // Device ID ကို သိမ်းထားမည်
+    
+    localStorage.clear(); // အခြား Data များကို ရှင်းမည်
+    
+    // Device ID ဟောင်းနှင့် Used Key ကို ပြန်ထည့်မည် (Device ID လုံးဝ မပြောင်းတော့ပါ)
+    if(savedDeviceID) {
+        localStorage.setItem('app_device_id', savedDeviceID);
+    }
+    if(savedKey) {
+        localStorage.setItem('app_used_key', savedKey);
+        document.getElementById('activationKeyInput').value = savedKey;
     }
 
-    const RATE_2D = 80;  
+    showActivationModal();
+    
+    let msgDiv = document.getElementById('activMsg');
+    if(msgDiv) {
+        msgDiv.style.color = 'red';
+        msgDiv.innerText = reason;
+    }
+
+    document.getElementById('pricingSection').style.display = 'block';
+    document.getElementById('trialBtn').style.display = 'none'; // Trial ခလုတ်ကို ဖြုတ်မည်
+}
+
+        function startCountdown(expiresAt) {
+            if (expiresAt === 'LIFETIME') {
+                document.getElementById('timeLeftDisplay').innerText = '∞ တစ်သက်လုံး အသုံးပြုနိုင်ပါသည်';
+                return;
+            }
+
+            let timerInterval = setInterval(() => {
+                let now = new Date().getTime();
+                let distance = parseInt(expiresAt) - now;
+
+                if (distance <= 0) {
+                clearInterval(timerInterval);
+    
+                // အရင်ဆုံး Alert ကို ပြပေးမည် (User က OK နှိပ်မှ ဆက်သွားမည်)
+                alert("သင့် Key သက်တမ်း ကုန်ဆုံးသွားပါပြီ။");
+             
+               // OK နှိပ်ပြီးတာနဲ့ login modal ဆီသို့ ချက်ချင်း ရောက်သွားစေရန် ဤ function ကို ခေါ်မည်
+              forceLogoutAndShowModal("သင့် Key သက်တမ်း ကုန်ဆုံးသွားပါပြီ။");
+              return;
+              }
+
+                let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                let timeString = "";
+                if (days > 0) {
+                    timeString += days + " ရက် " + hours + " နာရီ";
+                } else if (hours > 0) {
+                    timeString += hours + " နာရီ " + minutes + " မိနစ်";
+                } else {
+                    timeString += minutes + " မိနစ် " + seconds + " စက္ကန့်";
+                }
+
+                document.getElementById('timeLeftDisplay').innerText = timeString;
+            }, 1000);
+        }
+
+        async function getFreeTrial() {
+            let currentDeviceID = getDeviceID();
+            let msgDiv = document.getElementById('activMsg');
+
+            msgDiv.style.color = '#333';
+            msgDiv.innerText = 'Free Trial ရယူနေပါသည်...';
+
+            try {
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'get_trial', device_id: currentDeviceID })
+                });
+                let result = await response.json();
+
+                if (result.status === 'success') {
+                    localStorage.setItem('app_expires_at', result.expires_at);
+                    localStorage.setItem('app_plan_type', result.plan_type);
+                    localStorage.setItem('app_used_key', result.used_key);
+                    
+                    document.getElementById('activationKeyInput').value = result.used_key;
+
+                    msgDiv.style.color = 'green';
+                    msgDiv.innerText = result.message;
+
+                    setTimeout(() => {
+                        let modal = document.getElementById('activationModal');
+                        if(modal) modal.style.display = 'none';
+
+                        document.getElementById('planTypeDisplay').innerText = result.plan_type;
+                        document.getElementById('keyStatusBanner').style.display = 'block';
+                        startCountdown(result.expires_at);
+                    }, 800);
+                } else {
+                    msgDiv.style.color = 'red';
+                    msgDiv.innerText = result.message;
+                    if(result.status === 'expired_trial') {
+                        document.getElementById('pricingSection').style.display = 'block';
+                        document.getElementById('trialBtn').style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                msgDiv.style.color = 'red';
+                msgDiv.innerText = 'ဆာဗာ ချိတ်ဆက်မှု အဆင်မပြပါ။';
+            }
+        }
+
+        async function verifyActivationKey() {
+            let inputKey = document.getElementById('activationKeyInput').value.trim();
+            let msgDiv = document.getElementById('activMsg');
+            let currentDeviceID = getDeviceID();
+
+            if (!inputKey) {
+                msgDiv.style.color = 'red';
+                msgDiv.innerText = 'ကျေးဇူးပြု၍ Activation Key ထည့်ပါ။';
+                return;
+            }
+
+            msgDiv.style.color = '#333';
+            msgDiv.innerText = 'စစ်ဆေးနေပါသည်...';
+
+            try {
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ key: inputKey, device_id: currentDeviceID })
+                });
+                let result = await response.json();
+                // Server မှ Maintenance ဖြစ်နေကြောင်း တုံ့ပြန်လာပါက
+                if (result.status === 'maintenance') {
+               let msgDiv = document.getElementById('activMsg');
+               if(msgDiv) {
+               msgDiv.style.color = 'orange';
+               msgDiv.innerText = result.message;
+               }
+               alert(result.message); // Server Maintenance စာသားကို Alert ဖြင့်ပြမည်
+               return;
+                }
+                if (result.status === 'success') {
+                    localStorage.setItem('app_expires_at', result.expires_at);
+                    localStorage.setItem('app_plan_type', result.plan_type);
+                    localStorage.setItem('app_used_key', result.used_key || inputKey);
+                    
+                    msgDiv.style.color = 'green';
+                    msgDiv.innerText = result.message;
+
+                    setTimeout(() => {
+                        let modal = document.getElementById('activationModal');
+                        if(modal) modal.style.display = 'none';
+
+                        document.getElementById('pricingSection').style.display = 'none';
+                        document.getElementById('planTypeDisplay').innerText = result.plan_type;
+                        document.getElementById('keyStatusBanner').style.display = 'block';
+                        startCountdown(result.expires_at);
+                    }, 800);
+                } else {
+                    msgDiv.style.color = 'red';
+                    msgDiv.innerText = result.message;
+                    
+                    // သက်တမ်းကုန်သွားပါက ဈေးနှုန်း Plan များနှင့် Telegram ခလုတ်ကို ပြပေးမည်
+                    if(result.status === 'expired_key') {
+                        document.getElementById('pricingSection').style.display = 'block';
+                        document.getElementById('trialBtn').style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                msgDiv.style.color = 'red';
+                msgDiv.innerText = 'ဆာဗာနှင့် ချိတ်ဆက်၍ မရပါ။';
+            }
+        }
+		const RATE_2D = 80;  
     const RATE_3D = 500; 
 
     const todayStr = new Date().toISOString().split('T')[0];
     document.getElementById('filterDate').value = todayStr;
+    document.getElementById('selectedDate2D').value = todayStr;
+    document.getElementById('checkDate2D').value = todayStr;
+    document.getElementById('selectedDate3D').value = todayStr;
+    document.getElementById('checkDate3D').value = todayStr;
 
-    let bets2D = JSON.parse(localStorage.getItem('bets2D')) || {};
-    let customers2D = JSON.parse(localStorage.getItem('customers2D')) || {};
-    let grandTotal2D = parseFloat(localStorage.getItem('grandTotal2D')) || 0;
+    let currentSession2D = 'မနက်';
 
-    let bets3D = JSON.parse(localStorage.getItem('bets3D')) || {};
-    let customers3D = JSON.parse(localStorage.getItem('customers3D')) || {};
-    let grandTotal3D = parseFloat(localStorage.getItem('grandTotal3D')) || 0;
+    let lockedSessions = JSON.parse(localStorage.getItem('lockedSessions_v3')) || {};
+    let bets2DByDate = JSON.parse(localStorage.getItem('bets2DByDate_v3')) || {};
+    let customers2DByDate = JSON.parse(localStorage.getItem('customers2DByDate_v3')) || {};
 
-    let historyLog = JSON.parse(localStorage.getItem('historyLog')) || [];
+    let bets3DByDate = JSON.parse(localStorage.getItem('bets3DByDate_v3')) || {};
+    let customers3DByDate = JSON.parse(localStorage.getItem('customers3DByDate_v3')) || {};
+
+    let historyLog = JSON.parse(localStorage.getItem('historyLog_v3')) || [];
+
+    // Global variables for Modal state tracking
+    let currentEditingCustomer = null;
+    let currentEditingMode = null;
 
     const specialSets = {
         'အပူး': ['00', '11', '22', '33', '44', '55', '66', '77', '88', '99'],
@@ -340,21 +619,50 @@
 
     function validateNumberInput(input, maxLen) {
         input.value = input.value.replace(/[^0-9]/g, '');
-        if (input.value.length > maxLen) {
-            input.value = input.value.slice(0, maxLen);
-        }
+        if (input.value.length > maxLen) input.value = input.value.slice(0, maxLen);
     }
 
     function saveData() {
-        localStorage.setItem('bets2D', JSON.stringify(bets2D));
-        localStorage.setItem('customers2D', JSON.stringify(customers2D));
-        localStorage.setItem('grandTotal2D', grandTotal2D);
+        localStorage.setItem('lockedSessions_v3', JSON.stringify(lockedSessions));
+        localStorage.setItem('bets2DByDate_v3', JSON.stringify(bets2DByDate));
+        localStorage.setItem('customers2DByDate_v3', JSON.stringify(customers2DByDate));
+        localStorage.setItem('bets3DByDate_v3', JSON.stringify(bets3DByDate));
+        localStorage.setItem('customers3DByDate_v3', JSON.stringify(customers3DByDate));
+        localStorage.setItem('historyLog_v3', JSON.stringify(historyLog));
+    }
 
-        localStorage.setItem('bets3D', JSON.stringify(bets3D));
-        localStorage.setItem('customers3D', JSON.stringify(customers3D));
-        localStorage.setItem('grandTotal3D', grandTotal3D);
+    function isCurrentSessionLocked(mode) {
+        if (mode === '2D') {
+            let date = document.getElementById('selectedDate2D').value;
+            if (date < todayStr) return true; 
+            let key = `2D_${date}_${currentSession2D}`;
+            return !!lockedSessions[key];
+        } else {
+            let date = document.getElementById('selectedDate3D').value;
+            if (date < todayStr) return true; 
+            let key = `3D_${date}`;
+            return !!lockedSessions[key];
+        }
+    }
 
-        localStorage.setItem('historyLog', JSON.stringify(historyLog));
+    function checkLockState(mode) {
+        if (mode === '2D') {
+            const isLocked = isCurrentSessionLocked('2D');
+            document.getElementById('customerName2D').disabled = isLocked;
+            document.getElementById('pasteArea2D').disabled = isLocked;
+            document.getElementById('btnSave2D').disabled = isLocked;
+            let date = document.getElementById('selectedDate2D').value;
+            document.getElementById('btnReset2D').disabled = (date < todayStr);
+            document.getElementById('lockBanner2D').style.display = isLocked ? 'block' : 'none';
+        } else if (mode === '3D') {
+            const isLocked = isCurrentSessionLocked('3D');
+            document.getElementById('customerName3D').disabled = isLocked;
+            document.getElementById('pasteArea3D').disabled = isLocked;
+            document.getElementById('btnSave3D').disabled = isLocked;
+            let date = document.getElementById('selectedDate3D').value;
+            document.getElementById('btnReset3D').disabled = (date < todayStr);
+            document.getElementById('lockBanner3D').style.display = isLocked ? 'block' : 'none';
+        }
     }
 
     function switchMainMode(mode) {
@@ -369,9 +677,11 @@
         if (mode === '2D') {
             document.getElementById('panel2D').style.display = 'block';
             document.getElementById('btnMode2D').className = 'main-tab-btn active-2d';
+            onDateOrSessionChange('2D');
         } else if (mode === '3D') {
             document.getElementById('panel3D').style.display = 'block';
             document.getElementById('btnMode3D').className = 'main-tab-btn active-3d';
+            onDateOrSessionChange('3D');
         } else {
             document.getElementById('panelHistory').style.display = 'block';
             document.getElementById('btnModeHistory').className = 'main-tab-btn active-history';
@@ -386,25 +696,83 @@
         
         if (sub === 'input') {
             document.getElementById('subInput' + mode).classList.add('active');
+            checkLockState(mode);
         } else {
             document.getElementById('subWin' + mode).classList.add('active');
+            autoFetchNumber(mode);
         }
         btn.classList.add('active');
     }
 
+    function syncSessionRadioUI(sess) {
+        currentSession2D = sess;
+        document.getElementById('sessionTitle2D').innerText = sess;
+        
+        let inRadios = document.querySelectorAll('input[name="inputSession2D"]');
+        inRadios.forEach(r => r.checked = (r.value === sess));
+
+        let winRadios = document.querySelectorAll('input[name="session2D"]');
+        winRadios.forEach(r => r.checked = (r.value === sess));
+
+        checkLockState('2D');
+    }
+
+    function syncDateFromWin(mode) {
+        if (mode === '2D') {
+            document.getElementById('selectedDate2D').value = document.getElementById('checkDate2D').value;
+        } else {
+            document.getElementById('selectedDate3D').value = document.getElementById('checkDate3D').value;
+        }
+        onDateOrSessionChange(mode);
+    }
+
+    function onInputSessionChange(mode) {
+        let selected = document.querySelector('input[name="inputSession2D"]:checked')?.value || 'မနက်';
+        syncSessionRadioUI(selected);
+        onDateOrSessionChange('2D');
+    }
+
+    function initDataStructuresForDate(mode, dateStr) {
+        if (mode === '2D') {
+            if (!bets2DByDate[dateStr]) bets2DByDate[dateStr] = { 'မနက်': {}, 'ညနေ': {} };
+            if (!customers2DByDate[dateStr]) customers2DByDate[dateStr] = { 'မနက်': {}, 'ညနေ': {} };
+        } else {
+            if (!bets3DByDate[dateStr]) bets3DByDate[dateStr] = {};
+            if (!customers3DByDate[dateStr]) customers3DByDate[dateStr] = {};
+        }
+    }
+
     function addBet(mode, num, amount, cName) {
-        if (mode === '2D' && num.length === 1) num = '0' + num;
+        if (mode === '2D') {
+            if (num.length === 1) num = '0' + num;
+            let date = document.getElementById('selectedDate2D').value;
+            initDataStructuresForDate('2D', date);
 
-        let bets = (mode === '2D') ? bets2D : bets3D;
-        let customers = (mode === '2D') ? customers2D : customers3D;
+            let bets = bets2DByDate[date][currentSession2D];
+            let customers = customers2DByDate[date][currentSession2D];
 
-        if (!bets[num]) bets[num] = { amount: 0, buyers: {} };
-        bets[num].amount += amount;
-        bets[num].buyers[cName] = (bets[num].buyers[cName] || 0) + amount;
+            if (!bets[num]) bets[num] = { amount: 0, buyers: {} };
+            bets[num].amount += amount;
+            bets[num].buyers[cName] = (bets[num].buyers[cName] || 0) + amount;
 
-        if (!customers[cName]) customers[cName] = { totalAmount: 0, count: 0 };
-        customers[cName].totalAmount += amount;
-        customers[cName].count += 1;
+            if (!customers[cName]) customers[cName] = { totalAmount: 0, count: 0 };
+            customers[cName].totalAmount += amount;
+            customers[cName].count += 1;
+        } else {
+            let date = document.getElementById('selectedDate3D').value;
+            initDataStructuresForDate('3D', date);
+
+            let bets = bets3DByDate[date];
+            let customers = customers3DByDate[date];
+
+            if (!bets[num]) bets[num] = { amount: 0, buyers: {} };
+            bets[num].amount += amount;
+            bets[num].buyers[cName] = (bets[num].buyers[cName] || 0) + amount;
+
+            if (!customers[cName]) customers[cName] = { totalAmount: 0, count: 0 };
+            customers[cName].totalAmount += amount;
+            customers[cName].count += 1;
+        }
     }
 
     function getPermutations(str) {
@@ -423,15 +791,18 @@
         let results = [];
         for (let i = 0; i < digits.length; i++) {
             for (let j = 0; j < digits.length; j++) {
-                if (i !== j || includePuu) {
-                    results.push(digits[i] + digits[j]);
-                }
+                if (i !== j || includePuu) results.push(digits[i] + digits[j]);
             }
         }
         return results;
     }
 
     function processData(mode) {
+        if (isCurrentSessionLocked(mode)) {
+            alert('ဤ စာရင်းသည် စစ်ဆေး/SAVE ပြုလုပ်ပြီး သို့မဟုတ် ယခင်ရက်စွဲဖြစ်၍ စာရင်းထပ်ထည့်၍ မရတော့ပါ။');
+            return;
+        }
+
         let cName = document.getElementById('customerName' + mode).value.trim();
         const text = document.getElementById('pasteArea' + mode).value;
 
@@ -450,9 +821,7 @@
                 if (specialMatch) {
                     let keyword = specialMatch[1];
                     let amount = parseInt(specialMatch[2]);
-                    if (specialSets[keyword]) {
-                        specialSets[keyword].forEach(num => addBet('2D', num, amount, cName));
-                    }
+                    if (specialSets[keyword]) specialSets[keyword].forEach(num => addBet('2D', num, amount, cName));
                     return;
                 }
 
@@ -462,8 +831,7 @@
                     let amount = parseInt(brakeMatch[2]);
                     for (let i = 0; i <= 99; i++) {
                         let numStr = i < 10 ? '0' + i : '' + i;
-                        let sum = (parseInt(numStr[0]) + parseInt(numStr[1])) % 10;
-                        if (sum === targetBrake) addBet('2D', numStr, amount, cName);
+                        if ((parseInt(numStr[0]) + parseInt(numStr[1])) % 10 === targetBrake) addBet('2D', numStr, amount, cName);
                     }
                     return;
                 }
@@ -486,33 +854,24 @@
 
                 let khwayPuuMatch = trimmed.match(/^(\d+)(?:ခွေပူး|ပူးခွေ)\s*[:=\-\s]*\s*(\d+)$/);
                 if (khwayPuuMatch) {
-                    let digits = khwayPuuMatch[1];
-                    let amount = parseInt(khwayPuuMatch[2]);
-                    let khwayList = getKhwayNumbers(digits, true);
-                    khwayList.forEach(num => addBet('2D', num, amount, cName));
+                    getKhwayNumbers(khwayPuuMatch[1], true).forEach(num => addBet('2D', num, parseInt(khwayPuuMatch[2]), cName));
                     return;
                 }
 
                 let khwayMatch = trimmed.match(/^(\d+)ခွေ\s*[:=\-\s]*\s*(\d+)$/);
                 if (khwayMatch) {
-                    let digits = khwayMatch[1];
-                    let amount = parseInt(khwayMatch[2]);
-                    let khwayList = getKhwayNumbers(digits, false);
-                    khwayList.forEach(num => addBet('2D', num, amount, cName));
+                    getKhwayNumbers(khwayMatch[1], false).forEach(num => addBet('2D', num, parseInt(khwayMatch[2]), cName));
                     return;
                 }
 
                 let rMatch2D = trimmed.match(/^(.*?)\s*(?:[RrBb]|ပတ်|အာ)\s*(\d+)$/i);
                 if (rMatch2D) {
-                    let numsText = rMatch2D[1];
+                    let numbers = rMatch2D[1].match(/\d+/g);
                     let amount = parseInt(rMatch2D[2]);
-                    let numbers = numsText.match(/\d+/g);
                     if (numbers) {
-                        let hasInvalidDigits = numbers.some(n => n.length > 2);
-                        if (hasInvalidDigits) { invalidLines.push(line); return; }
+                        if (numbers.some(n => n.length > 2)) { invalidLines.push(line); return; }
                         numbers.forEach(num => {
-                            let permutedList = getPermutations(num.length === 1 ? '0' + num : num);
-                            permutedList.forEach(pNum => addBet('2D', pNum, amount, cName));
+                            getPermutations(num.length === 1 ? '0' + num : num).forEach(pNum => addBet('2D', pNum, amount, cName));
                         });
                     }
                     return;
@@ -520,16 +879,11 @@
 
                 let eqMatch = trimmed.match(/^(.*?)\s*[:=\-\s]\s*(\d+)$/);
                 if (eqMatch) {
-                    let numsText = eqMatch[1].trim();
+                    let numbers = eqMatch[1].trim().match(/\d+/g);
                     let amount = parseInt(eqMatch[2]);
-                    let numbers = numsText.match(/\d+/g);
                     if (numbers) {
-                        let hasInvalidDigits = numbers.some(n => n.length > 2);
-                        if (hasInvalidDigits) { invalidLines.push(line); return; }
-                        numbers.forEach(num => {
-                            let permutedList = getPermutations(num);
-                            permutedList.forEach(pNum => addBet('2D', pNum, amount, cName));
-                        });
+                        if (numbers.some(n => n.length > 2)) { invalidLines.push(line); return; }
+                        numbers.forEach(num => addBet('2D', num, amount, cName));
                     }
                     return;
                 }
@@ -539,31 +893,24 @@
             if (mode === '3D') {
                 let head3D = trimmed.match(/^(\d{2})ထိပ်\s*[:=\-\s]*\s*(\d+)$/);
                 if (head3D) {
-                    let prefix = head3D[1];
-                    let amount = parseInt(head3D[2]);
-                    for (let i = 0; i <= 9; i++) addBet('3D', prefix + i, amount, cName);
+                    for (let i = 0; i <= 9; i++) addBet('3D', head3D[1] + i, parseInt(head3D[2]), cName);
                     return;
                 }
 
                 let tail3D = trimmed.match(/^(\d{2})(?:နောက်|ပိတ်)\s*[:=\-\s]*\s*(\d+)$/);
                 if (tail3D) {
-                    let suffix = tail3D[1];
-                    let amount = parseInt(tail3D[2]);
-                    for (let i = 0; i <= 9; i++) addBet('3D', i + suffix, amount, cName);
+                    for (let i = 0; i <= 9; i++) addBet('3D', i + tail3D[1], parseInt(tail3D[2]), cName);
                     return;
                 }
 
                 let rMatch3D = trimmed.match(/^(.*?)\s*(?:[RrBb]|ပတ်|အာ)\s*(\d+)$/i);
                 if (rMatch3D) {
-                    let numsText = rMatch3D[1];
+                    let numbers = rMatch3D[1].match(/\d+/g);
                     let amount = parseInt(rMatch3D[2]);
-                    let numbers = numsText.match(/\d+/g);
                     if (numbers) {
-                        let hasInvalidDigits = numbers.some(n => n.length !== 3);
-                        if (hasInvalidDigits) { invalidLines.push(line); return; }
+                        if (numbers.some(n => n.length !== 3)) { invalidLines.push(line); return; }
                         numbers.forEach(num => {
-                            let permutedList = getPermutations(num);
-                            permutedList.forEach(pNum => addBet('3D', pNum, amount, cName));
+                            getPermutations(num).forEach(pNum => addBet('3D', pNum, amount, cName));
                         });
                     }
                     return;
@@ -571,16 +918,11 @@
 
                 let eqMatch = trimmed.match(/^(.*?)\s*[:=\-\s]\s*(\d+)$/);
                 if (eqMatch) {
-                    let numsText = eqMatch[1].trim();
+                    let numbers = eqMatch[1].trim().match(/\d+/g);
                     let amount = parseInt(eqMatch[2]);
-                    let numbers = numsText.match(/\d+/g);
                     if (numbers) {
-                        let hasInvalidDigits = numbers.some(n => n.length !== 3);
-                        if (hasInvalidDigits) { invalidLines.push(line); return; }
-                        numbers.forEach(num => {
-                            let permutedList = getPermutations(num);
-                            permutedList.forEach(pNum => addBet('3D', pNum, amount, cName));
-                        });
+                        if (numbers.some(n => n.length !== 3)) { invalidLines.push(line); return; }
+                        numbers.forEach(num => addBet('3D', num, amount, cName));
                     }
                     return;
                 }
@@ -588,18 +930,33 @@
             }
         });
 
-        if (invalidLines.length > 0) {
-            alert(`⚠️ အောက်ပါ စာရင်းများသည် ${mode} ပုံစံနှင့် မကိုက်ညီသဖြင့် ထည့်သွင်းမထားပါ:\n\n` + invalidLines.join('\n'));
-        }
+        if (invalidLines.length > 0) alert(`⚠️ မကိုက်ညီသော စာရင်းများ:\n\n` + invalidLines.join('\n'));
 
         document.getElementById('pasteArea' + mode).value = '';
         renderTables(mode);
         saveData();
     }
 
+    function getCurrentBetsAndCustomers(mode) {
+        if (mode === '2D') {
+            let date = document.getElementById('selectedDate2D').value;
+            initDataStructuresForDate('2D', date);
+            return {
+                bets: bets2DByDate[date][currentSession2D],
+                customers: customers2DByDate[date][currentSession2D]
+            };
+        } else {
+            let date = document.getElementById('selectedDate3D').value;
+            initDataStructuresForDate('3D', date);
+            return {
+                bets: bets3DByDate[date],
+                customers: customers3DByDate[date]
+            };
+        }
+    }
+
     function renderTables(mode, highlightNum = '') {
-        let bets = (mode === '2D') ? bets2D : bets3D;
-        let customers = (mode === '2D') ? customers2D : customers3D;
+        let { bets, customers } = getCurrentBetsAndCustomers(mode);
 
         const listTable = document.getElementById('listTable' + mode);
         const custTable = document.getElementById('customerTable' + mode);
@@ -610,11 +967,7 @@
         for (let num in bets) {
             let isWin = (num === highlightNum);
             let rowClass = isWin ? 'class="highlight-win"' : '';
-            
-            let buyerDetails = [];
-            for (let name in bets[num].buyers) {
-                buyerDetails.push(`${name} (${bets[num].buyers[name]}ကျပ်)`);
-            }
+            let buyerDetails = Object.keys(bets[num].buyers).map(k => `${k} (${bets[num].buyers[k]}ကျပ်)`);
 
             listTable.innerHTML += `<tr ${rowClass}>
                 <td><strong>${num} ${isWin ? '🏆' : ''}</strong></td>
@@ -629,44 +982,284 @@
         let custCount = 0;
         for (let name in customers) {
             custTable.innerHTML += `<tr>
-                <td><b>${name}</b></td>
+                <td><span class="clickable-customer" onclick="openEditModal('${name}', '${mode}')">${name} ✏️</span></td>
                 <td>${customers[name].count} ကွက်</td>
                 <td><b style="color:${mode==='2D'?'#27ae60':'#8e44ad'};">${customers[name].totalAmount.toLocaleString()}</b> ကျပ်</td>
             </tr>`;
             custCount++;
         }
 
-        if (numCount === 0) listTable.innerHTML = `<tr><td colspan="3" style="color:#aaa;">${mode} စာရင်းမရှိသေးပါ</td></tr>`;
-        if (custCount === 0) custTable.innerHTML = `<tr><td colspan="3" style="color:#aaa;">${mode} ထိုးသူ မရှိသေးပါ</td></tr>`;
+        if (numCount === 0) listTable.innerHTML = `<tr><td colspan="3" style="color:#aaa;">${mode} ${mode === '2D' ? '('+currentSession2D+')' : ''} စာရင်းမရှိသေးပါ</td></tr>`;
+        if (custCount === 0) custTable.innerHTML = `<tr><td colspan="3" style="color:#aaa;">${mode} ${mode === '2D' ? '('+currentSession2D+')' : ''} ထိုးသူ မရှိသေးပါ</td></tr>`;
 
         if (mode === '2D') {
-            grandTotal2D = totalSum;
             document.getElementById('total2D').innerText = totalSum.toLocaleString() + ' ကျပ်';
         } else {
-            grandTotal3D = totalSum;
             document.getElementById('total3D').innerText = totalSum.toLocaleString() + ' ကျပ်';
+        }
+    }
+
+    /* ================= EDIT MODAL FUNCTIONS ================= */
+    function openEditModal(cName, mode) {
+        if (isCurrentSessionLocked(mode)) {
+            alert('ဤ စာရင်းသည် စစ်ဆေး/SAVE ပြုလုပ်ပြီး သို့မဟုတ် ယခင်ရက်စွဲဖြစ်၍ စာရင်းပြင်ခွင့်မရှိတော့ပါ။');
+            return;
+        }
+
+        currentEditingCustomer = cName;
+        currentEditingMode = mode;
+        document.getElementById('modalTitle').innerText = `✏️ ${cName} ၏ ထိုးကြေးစာရင်း ပြင်ဆင်ရန်`;
+
+        let { bets } = getCurrentBetsAndCustomers(mode);
+        let tbody = document.getElementById('editModalTableBody');
+        tbody.innerHTML = '';
+
+        let userBets = [];
+        for (let num in bets) {
+            if (bets[num].buyers[cName] !== undefined) {
+                userBets.push({ num: num, amount: bets[num].buyers[cName] });
+            }
+        }
+
+        userBets.forEach((b, idx) => {
+            let maxLen = (mode === '2D') ? 2 : 3;
+            tbody.innerHTML += `
+                <tr class="edit-row">
+                    <td>
+                        <input type="text" class="edit-num-input" value="${b.num}" maxlength="${maxLen}" inputmode="numeric" oninput="validateNumberInput(this, ${maxLen})">
+                    </td>
+                    <td>
+                        <input type="number" class="edit-amt-input" value="${b.amount}" min="0">
+                    </td>
+                    <td>
+                        <button class="edit-delete-btn" onclick="removeEditRow(this)">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('editCustomerModal').style.display = 'flex';
+    }
+
+    function removeEditRow(btn) {
+        let row = btn.closest('tr');
+        row.remove();
+    }
+
+    function closeEditModal() {
+        document.getElementById('editCustomerModal').style.display = 'none';
+        currentEditingCustomer = null;
+        currentEditingMode = null;
+    }
+
+    function saveCustomerEdits() {
+        if (!currentEditingCustomer || !currentEditingMode) return;
+
+        let mode = currentEditingMode;
+        let cName = currentEditingCustomer;
+        let { bets, customers } = getCurrentBetsAndCustomers(mode);
+
+        let rows = document.querySelectorAll('.edit-row');
+        let newBetList = [];
+        let reqLen = (mode === '2D') ? 2 : 3;
+
+        for (let r of rows) {
+            let numVal = r.querySelector('.edit-num-input').value.trim();
+            let amtVal = parseInt(r.querySelector('.edit-amt-input').value) || 0;
+
+            if (!numVal) continue;
+
+            if (mode === '2D' && numVal.length === 1) numVal = '0' + numVal;
+
+            if (numVal.length !== reqLen) {
+                alert(`ဂဏန်း [ ${numVal} ] သည် ${mode} အတွက် လိုအပ်သော ဂဏန်းအရှည် (${reqLen} လုံး) မမှန်ပါ။`);
+                return;
+            }
+
+            if (amtVal > 0) {
+                newBetList.push({ num: numVal, amount: amtVal });
+            }
+        }
+
+        // 1. Remove old records for this customer
+        for (let num in bets) {
+            if (bets[num].buyers[cName] !== undefined) {
+                bets[num].amount -= bets[num].buyers[cName];
+                delete bets[num].buyers[cName];
+
+                if (bets[num].amount <= 0 || Object.keys(bets[num].buyers).length === 0) {
+                    delete bets[num];
+                }
+            }
+        }
+
+        // 2. Add updated records back
+        let newTotalAmt = 0;
+        let newCount = 0;
+
+        newBetList.forEach(b => {
+            if (!bets[b.num]) bets[b.num] = { amount: 0, buyers: {} };
+            bets[b.num].amount += b.amount;
+            bets[b.num].buyers[cName] = (bets[b.num].buyers[cName] || 0) + b.amount;
+
+            newTotalAmt += b.amount;
+            newCount += 1;
+        });
+
+        if (newCount > 0) {
+            customers[cName] = { totalAmount: newTotalAmt, count: newCount };
+        } else {
+            delete customers[cName];
+        }
+
+        saveData();
+        renderTables(mode);
+        closeEditModal();
+        alert(`${cName} ၏ ပြင်ဆင်ချက်များကို သိမ်းဆည်းပြီးပါပြီ!`);
+    }
+
+    async function autoFetchNumber(mode) {
+        const winInput = document.getElementById('winNum' + mode);
+        const selDate = mode === '2D' ? document.getElementById('selectedDate2D').value : document.getElementById('selectedDate3D').value;
+
+        if (selDate !== todayStr) {
+            winInput.value = '';
+            return;
+        }
+
+        try {
+            if (mode === '2D') {
+                let res = await fetch('https://api.thaistock2d.com/live');
+                let data = await res.json();
+
+                if (data && data.result) {
+                    let luckyNum = (currentSession2D === 'မနက်') 
+                        ? (data.result.find(r => r.open_time === '12:01:00')?.twod || data.live?.twod)
+                        : (data.result.find(r => r.open_time === '16:30:00')?.twod || data.live?.twod);
+
+                    if (luckyNum && luckyNum !== '--') {
+                        winInput.value = luckyNum;
+                    } else {
+                        winInput.value = '';
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('API Fetch Error:', err);
+            winInput.value = '';
+        }
+    }
+
+    function onDateOrSessionChange(mode) {
+        let selDate = '';
+        if (mode === '2D') {
+            selDate = document.getElementById('selectedDate2D').value;
+            document.getElementById('checkDate2D').value = selDate;
+
+            let sessionRadio = document.querySelector('input[name="session2D"]:checked');
+            let selSession = sessionRadio ? sessionRadio.value : 'မနက်';
+            syncSessionRadioUI(selSession);
+        } else {
+            selDate = document.getElementById('selectedDate3D').value;
+            document.getElementById('checkDate3D').value = selDate;
+        }
+
+        if (selDate) {
+            document.getElementById('filterDate').value = selDate;
+        }
+
+        let dateVal = mode === '2D' ? document.getElementById('selectedDate2D').value : document.getElementById('selectedDate3D').value;
+        let sessionText = mode === '2D' ? currentSession2D : '';
+
+        let existingRecord = historyLog.find(item => item.date === dateVal && item.mode === mode && (mode === '3D' || item.session === sessionText));
+
+        if (existingRecord) {
+            document.getElementById('winNum' + mode).value = existingRecord.winNum;
+            renderTables(mode, existingRecord.winNum);
+            
+            let profitStatus = (existingRecord.netProfit >= 0) 
+                ? `<span class="profit-text">💰 ဒိုင် အမြတ်: +${existingRecord.netProfit.toLocaleString()} ကျပ်</span>`
+                : `<span class="loss-text">⚠️ ဒိုင် အရှုံး: ${existingRecord.netProfit.toLocaleString()} ကျပ်</span>`;
+
+            let winnersHtml = (existingRecord.winners || []).map(w => `• <b>${w.name}</b>: ထိုးကြေး <b>${w.bet.toLocaleString()}</b> ➡️ ပေါက်ကြေး <b style="color:#d35400;">${w.win.toLocaleString()}</b> ကျပ်`).join('<br>');
+
+            let resultDiv = document.getElementById('winResult' + mode);
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <h4 style="margin:0 0 5px 0; color:#d35400;">🎉 ${mode} ${sessionText ? '('+sessionText+')' : ''} [${dateVal}] ပေါက်ဂဏန်း [ ${existingRecord.winNum} ]</h4>
+                <hr style="border:0.5px solid #eee;">
+                <div>📥 စုစုပေါင်း ရငွေ: <b>${existingRecord.grandTotal.toLocaleString()} ကျပ်</b></div>
+                <div>💸 စုစုပေါင်း လျော်ကြေး: <b>${existingRecord.totalPayout.toLocaleString()} ကျပ်</b></div>
+                <div style="margin-top: 5px;">📊 ${profitStatus}</div>
+                <hr style="border:0.5px solid #eee;">
+                <div style="margin-top: 5px; color:#333;"><u>ပေါက်သူများ အသေးစိတ်:</u><br>${winnersHtml || 'မရှိပါ'}</div>
+            `;
+        } else {
+            document.getElementById('winResult' + mode).style.display = 'none';
+            renderTables(mode);
+            autoFetchNumber(mode);
+        }
+        checkLockState(mode);
+    }
+
+    function lockCurrentSession(mode) {
+        if (mode === '2D') {
+            let date = document.getElementById('selectedDate2D').value;
+            let key = `2D_${date}_${currentSession2D}`;
+            lockedSessions[key] = true;
+        } else {
+            let date = document.getElementById('selectedDate3D').value;
+            let key = `3D_${date}`;
+            lockedSessions[key] = true;
+        }
+        saveData();
+        checkLockState(mode);
+    }
+
+    function saveAndPromptDownload(mode) {
+        let winNumInput = document.getElementById('winNum' + mode);
+        let winNum = winNumInput.value.trim();
+        let currentDate = document.getElementById(mode === '2D' ? 'selectedDate2D' : 'selectedDate3D').value;
+
+        if (!winNum) { alert(`${mode} ပေါက်ဂဏန်း ဖြည့်ပါ သို့မဟုတ် auto ထွက်ပေါ်လာချိန်အထိ စောင့်ပါ!`); return; }
+
+        checkWinner(mode);
+
+        let sessionText = mode === '2D' ? currentSession2D : '';
+        let confirmMsg = `${currentDate} ${mode} ${sessionText ? '('+sessionText+')' : ''} စာရင်းကို မှတ်တမ်းထဲ သိမ်းဆည်းပြီးပါပြီ။\n\nText File အဖြစ် Download ဆွဲယူမလား?`;
+
+        let isConfirm = confirm(confirmMsg);
+        let latestSavedItem = historyLog[0];
+
+        if (isConfirm && latestSavedItem) {
+            downloadSingleHistoryTxt(latestSavedItem);
+        }
+
+        if (mode === '2D') {
+            document.getElementById('customerName2D').value = '';
+            document.getElementById('pasteArea2D').value = '';
+        } else {
+            document.getElementById('customerName3D').value = '';
+            document.getElementById('pasteArea3D').value = '';
         }
     }
 
     function checkWinner(mode) {
         let winNumInput = document.getElementById('winNum' + mode);
         let winNum = winNumInput.value.trim();
-        let currentDate = new Date().toISOString().split('T')[0];
+        let currentDate = document.getElementById(mode === '2D' ? 'selectedDate2D' : 'selectedDate3D').value;
 
         if (!winNum) { alert(`${mode} ပေါက်ဂဏန်း ရိုက်ထည့်ပါ!`); return; }
-        if (mode === '2D' && winNum.length !== 2) { alert('2D ပေါက်ဂဏန်းသည် (၂) လုံး ကွက်တိ ဖြစ်ရပါမည်!'); return; }
-        if (mode === '3D' && winNum.length !== 3) { alert('3D ပေါက်ဂဏန်းသည် (၃) လုံး ကွက်တိ ဖြစ်ရပါမည်!'); return; }
+        if (mode === '2D' && winNum.length !== 2) { alert('2D ပေါက်ဂဏန်းသည် (၂) လုံး ဖြစ်ရပါမည်!'); return; }
+        if (mode === '3D' && winNum.length !== 3) { alert('3D ပေါက်ဂဏန်းသည် (၃) လုံး ဖြစ်ရပါမည်!'); return; }
 
-        let sessionText = "";
-        if (mode === '2D') {
-            let sessionRadio = document.querySelector('input[name="session2D"]:checked');
-            sessionText = sessionRadio ? sessionRadio.value : "မနက်";
-        }
-
+        let sessionText = mode === '2D' ? currentSession2D : '';
         let multiplier = (mode === '2D') ? RATE_2D : RATE_3D;
-        let bets = (mode === '2D') ? bets2D : bets3D;
-        let customers = (mode === '2D') ? customers2D : customers3D;
-        let grandTotal = (mode === '2D') ? grandTotal2D : grandTotal3D;
+        
+        let { bets, customers } = getCurrentBetsAndCustomers(mode);
+        
+        let grandTotal = 0;
+        for (let num in bets) grandTotal += bets[num].amount;
 
         renderTables(mode, winNum);
 
@@ -676,16 +1269,16 @@
         if (bets[winNum]) {
             let data = bets[winNum];
             totalPayout = data.amount * multiplier;
-
             for (let name in data.buyers) {
                 let betAmount = data.buyers[name];
-                let winAmount = betAmount * multiplier;
-                winnersList.push({ name: name, bet: betAmount, win: winAmount });
+                winnersList.push({ name: name, bet: betAmount, win: betAmount * multiplier });
             }
         }
 
         let netProfit = grandTotal - totalPayout;
         let displayModeText = (mode === '2D') ? `2D (${sessionText})` : '3D';
+
+        historyLog = historyLog.filter(item => !(item.date === currentDate && item.mode === mode && (mode === '3D' || item.session === sessionText)));
 
         historyLog.unshift({
             id: Date.now(),
@@ -696,13 +1289,13 @@
             grandTotal: grandTotal,
             totalPayout: totalPayout,
             netProfit: netProfit,
-            bets2D: (mode === '2D') ? JSON.parse(JSON.stringify(bets2D)) : null,
-            bets3D: (mode === '3D') ? JSON.parse(JSON.stringify(bets3D)) : null,
+            bets2D: (mode === '2D') ? JSON.parse(JSON.stringify(bets)) : null,
+            bets3D: (mode === '3D') ? JSON.parse(JSON.stringify(bets)) : null,
             customers: JSON.parse(JSON.stringify(customers)),
             winners: winnersList
         });
 
-        saveData();
+        lockCurrentSession(mode);
 
         let profitStatus = (netProfit >= 0) 
             ? `<span class="profit-text">💰 ဒိုင် အမြတ်: +${netProfit.toLocaleString()} ကျပ်</span>`
@@ -713,15 +1306,78 @@
         let resultDiv = document.getElementById('winResult' + mode);
         resultDiv.style.display = 'block';
         resultDiv.innerHTML = `
-            <h4 style="margin:0 0 5px 0; color:#d35400;">🎉 ${displayModeText} ပေါက်ဂဏန်း [ ${winNum} ]</h4>
+            <h4 style="margin:0 0 5px 0; color:#d35400;">🎉 ${displayModeText} [${currentDate}] ပေါက်ဂဏန်း [ ${winNum} ]</h4>
             <hr style="border:0.5px solid #eee;">
-            <div>📥 ထိုးသား အားလုံး၏ စုစုပေါင်း ရငွေ: <b>${grandTotal.toLocaleString()} ကျပ်</b></div>
-            <div>💸 ဒိုင် စုစုပေါင်း လျော်ကြေး: <b>${totalPayout.toLocaleString()} ကျပ်</b></div>
+            <div>📥 စုစုပေါင်း ရငွေ: <b>${grandTotal.toLocaleString()} ကျပ်</b></div>
+            <div>💸 စုစုပေါင်း လျော်ကြေး: <b>${totalPayout.toLocaleString()} ကျပ်</b></div>
             <div style="margin-top: 5px;">📊 ${profitStatus}</div>
             <hr style="border:0.5px solid #eee;">
             <div style="margin-top: 5px; color:#333;"><u>ပေါက်သူများ အသေးစိတ်:</u><br>${winnersHtml || 'မရှိပါ'}</div>
-            <div style="margin-top: 10px; font-size:12px; color:#27ae60;">✅ ရက်စွဲအလိုက် မှတ်တမ်းထဲသို့ သိမ်းဆည်းလိုက်ပါပြီ!</div>
+            <div style="margin-top: 10px; font-size:12px; color:#27ae60;">✅ ရက်စွဲအလိုက် မှတ်တမ်းထဲသို့ သိမ်းပြီးပါပြီ! (စာရင်း ပိတ်သွားပါပြီ)</div>
         `;
+    }
+
+    function downloadSingleHistoryTxt(item) {
+        let txtContent = generateTxtContent([item], item.date);
+        let sessionDisplay = item.session ? `_${item.session}` : '';
+        const blob = new Blob(['\uFEFF' + txtContent], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${item.mode}${sessionDisplay}_Report_${item.date}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function generateTxtContent(selectedItems, dateStr) {
+        let txtContent = `=========================================\n`;
+        txtContent += `      2D / 3D စာရင်းချုပ် မှတ်တမ်း\n`;
+        txtContent += `      ထုတ်ယူသည့်ရက်စွဲ: ${dateStr}\n`;
+        txtContent += `=========================================\n\n`;
+
+        selectedItems.forEach((item, idx) => {
+            let sessionDisplay = (item.mode === '2D' && item.session) ? ` (${item.session})` : '';
+            txtContent += `[ ${idx + 1} ] ${item.mode}${sessionDisplay} စာရင်း\n`;
+            txtContent += `-----------------------------------------\n`;
+            txtContent += `🎯 ပေါက်ဂဏန်း: ${item.winNum}\n`;
+            txtContent += `📥 စုစုပေါင်း ရငွေ: ${item.grandTotal.toLocaleString()} ကျပ်\n`;
+            txtContent += `💸 စုစုပေါင်း လျော်ကြေး: ${item.totalPayout.toLocaleString()} ကျပ်\n`;
+            txtContent += `📊 ${item.netProfit >= 0 ? 'ဒိုင် အမြတ်' : 'ဒိုင် အရှုံး'}: ${item.netProfit.toLocaleString()} ကျပ်\n\n`;
+
+            txtContent += `👤 ထိုးသူတစ်ဦးချင်းစီ စာရင်း:\n`;
+            txtContent += `-----------------------------------------\n`;
+            
+            let targetBets = (item.mode === '2D') ? item.bets2D : item.bets3D;
+            let customerBetsDetail = {};
+
+            if (targetBets) {
+                for (let num in targetBets) {
+                    for (let cName in targetBets[num].buyers) {
+                        if (!customerBetsDetail[cName]) customerBetsDetail[cName] = [];
+                        customerBetsDetail[cName].push({ num: num, amount: targetBets[num].buyers[cName] });
+                    }
+                }
+            }
+
+            for (let c in item.customers) {
+                txtContent += `► ${c} (စုစုပေါင်း: ${item.customers[c].count} ကွက် / ${item.customers[c].totalAmount.toLocaleString()} ကျပ်)\n`;
+                if (customerBetsDetail[c]) {
+                    customerBetsDetail[c].forEach(b => {
+                        txtContent += `    • ${b.num} = ${b.amount.toLocaleString()} ကျပ်\n`;
+                    });
+                }
+                txtContent += `\n`;
+            }
+
+            if (item.winners && item.winners.length > 0) {
+                txtContent += `🎉 ပေါက်သူများ အသေးစိတ်:\n`;
+                item.winners.forEach(w => {
+                    txtContent += `  - ${w.name}: ထိုးကြေး ${w.bet.toLocaleString()} ကျပ် -> ပေါက်ကြေး ${w.win.toLocaleString()} ကျပ်\n`;
+                });
+            }
+            txtContent += `\n=========================================\n\n`;
+        });
+        return txtContent;
     }
 
     function renderHistory() {
@@ -739,7 +1395,7 @@
         if (filtered.length === 0) {
             historyControls.style.display = 'none';
             downloadTxtBtn.style.display = 'none';
-            historyList.innerHTML = `<div style="text-align:center; color:#aaa; margin-top:20px;">📅 ${filterDate} ရက်နေ့အတွက် သိမ်းထားသော မှတ်တမ်း မရှိသေးပါ</div>`;
+            historyList.innerHTML = `<div style="text-align:center; color:#aaa; margin-top:20px;">📅 ${filterDate} ရက်နေ့အတွက် မှတ်တမ်း မရှိသေးပါ</div>`;
             return;
         }
 
@@ -749,19 +1405,14 @@
         filtered.forEach(item => {
             let profitClass = item.netProfit >= 0 ? 'profit-text' : 'loss-text';
             let profitLabel = item.netProfit >= 0 ? 'ဒိုင် အမြတ်' : 'ဒိုင် အရှုံး';
-
-            let custList = [];
-            for (let c in item.customers) {
-                custList.push(`${c} (${item.customers[c].totalAmount.toLocaleString()}ကျပ်)`);
-            }
-
+            let custList = Object.keys(item.customers).map(c => `${c} (${item.customers[c].totalAmount.toLocaleString()}ကျပ်)`);
             let sessionDisplay = (item.mode === '2D' && item.session) ? ` - ${item.session}` : '';
 
             historyList.innerHTML += `
                 <div class="history-card" id="card-${item.id}">
                     <div class="history-header">
                         <div style="display:flex; align-items:center;">
-                            <input type="checkbox" class="card-checkbox history-item-checkbox" value="${item.id}" style="transform: scale(1.2); cursor: pointer; margin-right: 8px;">
+                            <input type="checkbox" class="card-checkbox history-item-checkbox" value="${item.id}">
                             <span>📅 ${item.date} (<b style="color:${item.mode==='2D'?'#3498db':'#8e44ad'};">${item.mode}${sessionDisplay}</b>)</span>
                         </div>
                         <div>
@@ -785,81 +1436,26 @@
         let selectedCheckboxes = document.querySelectorAll('.history-item-checkbox:checked');
 
         if (selectedCheckboxes.length === 0) {
-            alert('ဒေါင်းလုဒ်ဆွဲလိုသည့် မှတ်တမ်းအကွက်များကို အရင် Checkbox (အမှန်ခြစ်) ရွေးပေးပါ!');
+            alert('ဒေါင်းလုဒ်ဆွဲလိုသည့် မှတ်တမ်းများကို အရင် ရွေးပေးပါ!');
             return;
         }
 
         let selectedIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
         let selectedItems = historyLog.filter(item => selectedIds.includes(item.id));
 
-        let txtContent = `=========================================\n`;
-        txtContent += `      2D / 3D စာရင်းချုပ် မှတ်တမ်း (ရွေးချယ်ထားသော စာရင်းများ)\n`;
-        txtContent += `      ထုတ်ယူသည့်ရက်စွဲ: ${filterDate}\n`;
-        txtContent += `=========================================\n\n`;
-
-        selectedItems.forEach((item, idx) => {
-            let sessionDisplay = (item.mode === '2D' && item.session) ? ` (${item.session})` : '';
-            txtContent += `[ ${idx + 1} ] ${item.mode}${sessionDisplay} စာရင်း\n`;
-            txtContent += `-----------------------------------------\n`;
-            txtContent += `🎯 ပေါက်ဂဏန်း: ${item.winNum}\n`;
-            txtContent += `📥 စုစုပေါင်း ရငွေ: ${item.grandTotal.toLocaleString()} ကျပ်\n`;
-            txtContent += `💸 စုစုပေါင်း လျော်ကြေး: ${item.totalPayout.toLocaleString()} ကျပ်\n`;
-            txtContent += `📊 ${item.netProfit >= 0 ? 'ဒိုင် အမြတ်' : 'ဒိုင် အရှုံး'}: ${item.netProfit.toLocaleString()} ကျပ်\n\n`;
-
-            txtContent += `👤 ထိုးသူတစ်ဦးချင်းစီ အသေးစိတ် စာရင်း:\n`;
-            txtContent += `-----------------------------------------\n`;
-            
-            let customerBetsDetail = {};
-            let targetBets = (item.mode === '2D') ? item.bets2D : item.bets3D;
-
-            if (targetBets) {
-                let targetBetsObj = targetBets;
-                for (let num in targetBetsObj) {
-                    let buyers = targetBetsObj[num].buyers;
-                    for (let cName in buyers) {
-                        if (!customerBetsDetail[cName]) customerBetsDetail[cName] = [];
-                        customerBetsDetail[cName].push({ num: num, amount: buyers[cName] });
-                    }
-                }
-            }
-
-            for (let c in item.customers) {
-                txtContent += `► ${c} (စုစုပေါင်း: ${item.customers[c].count} ကွက် / ${item.customers[c].totalAmount.toLocaleString()} ကျပ်)\n`;
-                
-                if (customerBetsDetail[c] && customerBetsDetail[c].length > 0) {
-                    customerBetsDetail[c].forEach(b => {
-                        txtContent += `    • ${b.num} = ${b.amount.toLocaleString()} ကျပ်\n`;
-                    });
-                } else {
-                    txtContent += `    • အသေးစိတ်ဂဏန်းစာရင်း မရှိပါ\n`;
-                }
-                txtContent += `\n`;
-            }
-
-            if (item.winners && item.winners.length > 0) {
-                txtContent += `🎉 ပေါက်သူများ အသေးစိတ်:\n`;
-                item.winners.forEach(w => {
-                    txtContent += `  - ${w.name}: ထိုးကြေး ${w.bet.toLocaleString()} ကျပ် -> ပေါက်ကြေး ${w.win.toLocaleString()} ကျပ်\n`;
-                });
-            } else {
-                txtContent += `🎉 ပေါက်သူများ: မရှိပါ\n`;
-            }
-
-            txtContent += `\n=========================================\n\n`;
-        });
+        let txtContent = generateTxtContent(selectedItems, filterDate);
 
         const blob = new Blob(['\uFEFF' + txtContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `2D_3D_Report_Selected_${filterDate}.txt`;
+        link.download = `2D_3D_Report_${filterDate}.txt`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
 
     function toggleSelectAllHistory(master) {
-        let checkboxes = document.querySelectorAll('.history-item-checkbox');
-        checkboxes.forEach(cb => cb.checked = master.checked);
+        document.querySelectorAll('.history-item-checkbox').forEach(cb => cb.checked = master.checked);
     }
 
     function deleteSingleHistory(id) {
@@ -872,12 +1468,9 @@
 
     function deleteSelectedHistory() {
         let selectedCheckboxes = document.querySelectorAll('.history-item-checkbox:checked');
-        if (selectedCheckboxes.length === 0) {
-            alert('ဖျက်လိုသည့် မှတ်တမ်းကို အရင် select လုပ်ပေးပါ!');
-            return;
-        }
+        if (selectedCheckboxes.length === 0) { alert('ဖျက်လိုသည့် မှတ်တမ်းကို အရင် ရွေးပေးပါ!'); return; }
 
-        if (confirm(`ရွေးချယ်ထားသော မှတ်တမ်း (${selectedCheckboxes.length}) ခုကို ဖျက်ရန် သေချာပါသလား။`)) {
+        if (confirm(`ရွေးထားသော မှတ်တမ်း (${selectedCheckboxes.length}) ခုကို ဖျက်ရန် သေချာပါသလား။`)) {
             let selectedIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
             historyLog = historyLog.filter(item => !selectedIds.includes(item.id));
             saveData();
@@ -886,24 +1479,64 @@
     }
 
     function resetData(mode) {
-        if (confirm(`${mode} လက်ရှိ စာရင်းများကို ဖျက်ရန် သေချာပါသလား။`)) {
+        let date = mode === '2D' ? document.getElementById('selectedDate2D').value : document.getElementById('selectedDate3D').value;
+
+        if (date < todayStr) {
+            alert('ပြီးခဲ့ပြီးသော ရက်စွဲများအတွက် စာရင်းကို ပြင်ဆင်/ဖျက်ဆီးခွင့် မရှိပါ။');
+            return;
+        }
+
+        let sessionText = mode === '2D' ? currentSession2D : '';
+
+        if (confirm(`${date} ${mode} ${sessionText ? '('+sessionText+')' : ''} စာရင်းနှင့် Lock ကို ပြန်လည် Reset ချရန် သေချာပါသလား။`)) {
             if (mode === '2D') {
-                bets2D = {}; customers2D = {}; grandTotal2D = 0;
+                let key = `2D_${date}_${currentSession2D}`;
+                delete lockedSessions[key];
+
+                if (bets2DByDate[date]) bets2DByDate[date][currentSession2D] = {};
+                if (customers2DByDate[date]) customers2DByDate[date][currentSession2D] = {};
+
                 document.getElementById('customerName2D').value = '';
                 document.getElementById('pasteArea2D').value = '';
                 document.getElementById('winNum2D').value = '';
                 document.getElementById('winResult2D').style.display = 'none';
             } else {
-                bets3D = {}; customers3D = {}; grandTotal3D = 0;
+                let key = `3D_${date}`;
+                delete lockedSessions[key];
+
+                if (bets3DByDate[date]) bets3DByDate[date] = {};
+                if (customers3DByDate[date]) customers3DByDate[date] = {};
+
                 document.getElementById('customerName3D').value = '';
                 document.getElementById('pasteArea3D').value = '';
                 document.getElementById('winNum3D').value = '';
                 document.getElementById('winResult3D').style.display = 'none';
             }
+
+            historyLog = historyLog.filter(item => !(item.date === date && item.mode === mode && (mode === '3D' || item.session === sessionText)));
+
             saveData();
+            checkLockState(mode);
             renderTables(mode);
+            alert('Reset ပြုလုပ်ပြီးပါပြီ! စာရင်းပြန်ထည့်နိုင်ပါပြီ။');
         }
     }
-</script>
+
+    window.onload = function() {
+        // App စပွင့်တာနဲ့/Refresh ဖြစ်တာနဲ့ လက်ရှိ ဒီနေ့ Date ကို ပြန်ယူမည်
+        const currentToday = new Date().toISOString().split('T')[0];
+
+        // Date input တွေ အားလုံးကို ဒီနေ့ Date သို့ ပြန်ပြောင်းမည်
+        document.getElementById('filterDate').value = currentToday;
+        document.getElementById('selectedDate2D').value = currentToday;
+        document.getElementById('checkDate2D').value = currentToday;
+        document.getElementById('selectedDate3D').value = currentToday;
+        document.getElementById('checkDate3D').value = currentToday;
+
+        // Date ပြောင်းသွားသည်ဖြစ်၍ UI နှင့် Data များကို ပြန်လည် Load လုပ်မည်
+        onDateOrSessionChange('2D');
+        onDateOrSessionChange('3D');
+    };
+    </script>
 </body>
 </html>
