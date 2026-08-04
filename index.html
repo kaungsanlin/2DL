@@ -1538,5 +1538,86 @@
         onDateOrSessionChange('3D');
     };
     </script>
+
+	    <!-- Tesseract.js (ဓာတ်ပုံထဲမှ စာသားဖတ်ရန် OCR Library) -->
+<script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+
+<!-- သင်ပေးထားသော handleImageScan function နှင့် ကင်မရာခလုတ် ချိတ်ဆက်မှု ကုဒ် -->
+<script>
+    // ပေးထားသော function ကို တိုက်ရိုက် အသုံးပြုခြင်း
+    function handleImageScan(event, mode) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const statusDiv = document.getElementById('scanStatus' + mode);
+        const textArea = document.getElementById('pasteArea' + mode);
+        if(statusDiv) statusDiv.innerText = "⏳ ပုံကို စာသားအဖြစ် ဖတ်နေပါပြီ ခဏစောင့်ပါ...";
+
+        Tesseract.recognize(
+            file,
+            'eng+mya',
+            { 
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        let prog = Math.round(m.progress * 100);
+                        if(statusDiv) statusDiv.innerText = `⏳ ဖတ်နေစဉ်: ${prog}%`;
+                    }
+                }
+            }
+        ).then(({ data: { text } }) => {
+            if(statusDiv) statusDiv.innerText = "✅ စာသားဖတ်ရှုခြင်း ပြီးစီးပါပြီ!";
+            if (text && text.trim()) {
+                let existing = textArea.value;
+                textArea.value = existing ? existing + '\n' + text.trim() : text.trim();
+            } else {
+                if(statusDiv) statusDiv.innerText = "⚠️ ပုံထဲတွင် စာသား ရှာမတွေ့ပါ။";
+            }
+        }).catch(err => {
+            console.error(err);
+            if(statusDiv) statusDiv.innerText = "❌ စာဖတ်ရာတွင် အမှားအယွင်း ရှိပါသည်။";
+        });
+    }
+
+    // 2D နှင့် 3D textarea တို့တွင် ကင်မရာခလုတ်နှင့် status ဖော်ပြရန် နေရာထည့်သွင်းခြင်း
+    window.addEventListener('DOMContentLoaded', () => {
+        ['2D', '3D'].forEach(mode => {
+            let textarea = document.getElementById('pasteArea' + mode);
+            if (textarea) {
+                let wrapper = document.createElement('div');
+                wrapper.style.position = 'relative';
+                wrapper.style.display = 'block';
+                
+                textarea.parentNode.insertBefore(wrapper, textarea);
+                wrapper.appendChild(textarea);
+
+                // အခြေအနေပြစာသား (Status Div) ဖန်တီးခြင်း
+                let statusDiv = document.createElement('div');
+                statusDiv.id = 'scanStatus' + mode;
+                statusDiv.style.cssText = 'font-size: 12px; color: #555; margin-bottom: 5px;';
+                wrapper.parentNode.insertBefore(statusDiv, wrapper);
+
+                // ညာဘက်အောက်ထောင့်တွင် ပေါ်မည့် ကင်မရာပုံစံ ခလုတ် (အပေါ်သို့ တင်ထားရန် bottom: 45px သုံးထားသည်)
+                let camBtn = document.createElement('label');
+                camBtn.innerHTML = '📷';
+                camBtn.title = 'ကင်မရာ (သို့) ဓာတ်ပုံဖြင့် စာရင်းထည့်ရန်';
+                camBtn.style.cssText = 'position: absolute; right: 10px; bottom: 60px; background: #0284c7; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10;';
+                
+                let fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.capture = 'environment';
+                fileInput.style.display = 'none';
+
+                // သင်ပေးထားသော handleImageScan function ကို ချိတ်ဆက်ပေးခြင်း
+                fileInput.onchange = function(event) {
+                    handleImageScan(event, mode);
+                };
+
+                camBtn.appendChild(fileInput);
+                wrapper.appendChild(camBtn);
+            }
+        });
+    });
+</script>
 </body>
 </html>
